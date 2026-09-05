@@ -82,7 +82,7 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
       `DTSTAMP:${utcStamp(new Date())}`,
       `DTSTART;TZID=America/Los_Angeles:${compact(eventStart(event))}`,
       `DTEND;TZID=America/Los_Angeles:${compact(eventEnd(event))}`,
-      `SUMMARY:${escapeText(`${event.courseCode} — ${event.title}`)}`,
+      `SUMMARY:${escapeText(`${event.courseCode} - ${event.title}`)}`,
       `DESCRIPTION:${escapeText(`${event.kind} · ~${event.estimatedHours}h${course?.professor ? ` · ${course.professor}` : ""}${event.location ? ` · ${event.location}` : ""}`)}`,
       `CATEGORIES:${escapeText(`${event.courseCode},${event.kind}`)}`,
       `COLOR:${color}`,
@@ -106,7 +106,7 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
 export function googleCalendarUrl(event: AcademicEvent) {
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: `${event.courseCode} — ${event.title}`,
+    text: `${event.courseCode} - ${event.title}`,
     dates: `${compact(eventStart(event))}/${compact(eventEnd(event))}`,
     details: `${event.kind} · ~${event.estimatedHours}h · added by Syllabot`,
     ctz: "America/Los_Angeles",
@@ -117,7 +117,7 @@ export function googleCalendarUrl(event: AcademicEvent) {
 
 export function outlookCalendarUrl(event: AcademicEvent) {
   const params = new URLSearchParams({
-    subject: `${event.courseCode} — ${event.title}`,
+    subject: `${event.courseCode} - ${event.title}`,
     startdt: eventStart(event).toISOString(),
     enddt: eventEnd(event).toISOString(),
     body: `${event.kind} · ~${event.estimatedHours}h · added by Syllabot`,

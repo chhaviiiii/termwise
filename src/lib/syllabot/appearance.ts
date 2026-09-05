@@ -21,7 +21,7 @@ export const THEMES: { id: ThemeId; label: string; note: string }[] = [
 export const ACCENTS = ["#b42318", "#171614", "#1f4d3a", "#1d3a6e", "#8a5a12", "#6b2d5b"];
 
 export const DEFAULT_WIDGETS: WidgetPref[] = [
-  { id: "collision", label: "Collision alert", visible: true },
+  { id: "collision", label: "Pileups", visible: true },
   { id: "due", label: "Due this week", visible: true },
   { id: "brief", label: "Sunday brief", visible: true },
   { id: "courses", label: "Courses", visible: true },

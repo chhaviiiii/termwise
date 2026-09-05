@@ -3,7 +3,7 @@
 Paste this in the Syllabot chat after creating the Bot.
 
 Connect the Google Calendar plugin and the Gmail plugin so you can read
-my syllabi (I'll paste or upload them) and manage deadlines.
+my syllabi (I'll paste or upload them) and keep the dates in one place.
 
 Until those plugins are connected, use Syllabot fallbacks:
 - Show a confirmation table before creating events

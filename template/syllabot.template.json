@@ -1,6 +1,6 @@
 {
   "name": "Syllabot",
-  "title": "Personal academic assistant",
+  "title": "A tidy semester desk",
   "hashtag": "#GrokBotForStudents",
   "plugins": ["Google Calendar", "Gmail"],
   "memory": [
@@ -18,7 +18,7 @@
     {
       "name": "weekly-brief",
       "schedule": "Every Sunday at 8:00 PM",
-      "output": "Week-ahead email: dues by course, collisions in 2 weeks, one thing to start early"
+      "output": "Week-ahead note: dues by course, collisions in 2 weeks, one thing to start early"
     }
   ]
 }

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Syllabot — personal academic assistant",
-  description: "Extract syllabi, flag deadline collisions, and draft extension emails. Never send without your OK.",
+  title: "Syllabot",
+  description: "Drop in syllabi, keep the calendar tidy, and draft extension emails. Nothing goes out until you say so.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

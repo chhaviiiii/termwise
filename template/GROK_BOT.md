@@ -5,7 +5,7 @@ This folder is the shareable Bot template. It has no API keys and no student dat
 1. In Grok Bot: **New → Create new agent → name it "Syllabot"**
 2. **Bot actions → Edit Profile** and paste `01-identity.md`
 3. In the new chat, paste `02-connect-plugins.md`
-4. Add the four skills from `.grok/skills/` (or `03`–`06` in this folder)
+4. Add the four skills from `.grok/skills/` (or `03-06` in this folder)
 5. Ask: `Every Sunday at 8pm, run weekly-brief.`
 6. When it works, **Share as template**. Strip any personal emails first.
 

@@ -75,7 +75,7 @@ export function SemesterCalendar({
   }, [visible]);
 
   const label = mode === "week"
-    ? `${format(startOfWeek(cursor, { weekStartsOn: 1 }), "MMM d")}–${format(endOfWeek(cursor, { weekStartsOn: 1 }), "MMM d, yyyy")}`
+    ? `${format(startOfWeek(cursor, { weekStartsOn: 1 }), "MMM d")} - ${format(endOfWeek(cursor, { weekStartsOn: 1 }), "MMM d, yyyy")}`
     : format(cursor, "MMMM yyyy");
 
   const dayEvents = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
@@ -87,7 +87,7 @@ export function SemesterCalendar({
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-[var(--sb-muted)]">Calendar</p>
               <h2 className="mt-1 text-2xl font-semibold tracking-tight">{label}</h2>
-              <p className="text-xs text-[var(--sb-muted)]">{visible.length} events · collision days marked</p>
+              <p className="text-xs text-[var(--sb-muted)]">{visible.length} events · pileup days marked</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex border border-[var(--sb-line)] p-0.5">

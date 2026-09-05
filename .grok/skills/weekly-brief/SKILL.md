@@ -1,6 +1,6 @@
 ---
 name: weekly-brief
-description: Sunday 8pm week-ahead email — dues by course, collisions in the next 2 weeks, and one thing to start early.
+description: Sunday 8pm week-ahead note: dues by course, collisions in the next 2 weeks, and one thing to start early.
 user-invocable: true
 ---
 
@@ -8,7 +8,7 @@ user-invocable: true
 
 Routine schedule: every Sunday at 8:00 PM in the student's local timezone.
 
-## Email must include
+## Note must include
 
 - What's due this coming week, by course
 - Any deadline collisions in the next 2 weeks
@@ -17,4 +17,4 @@ Routine schedule: every Sunday at 8:00 PM in the student's local timezone.
 
 ## Safety
 
-Show the email draft first. Do not send unless the student said "send it" or auto-approved this routine.
+Show the draft first. Do not send unless the student said "send it" or auto-approved this routine.

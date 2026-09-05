@@ -41,7 +41,7 @@ export function AppearancePanel({
         <div className="flex-1 space-y-8 overflow-y-auto px-5 py-6">
           <section>
             <h3 className="text-sm font-semibold">Your desk</h3>
-            <p className="mt-1 text-xs text-[var(--sb-muted)]">Name and weekly hours stay in memory.</p>
+            <p className="mt-1 text-xs text-[var(--sb-muted)]">Name and weekly hours stay on this desk.</p>
             <label className="mt-3 block text-xs text-[var(--sb-muted)]">
               Display name
               <input value={studentName} onChange={(event) => onName(event.target.value)} className="mt-1 h-10 w-full rounded-lg border border-[var(--sb-line)] bg-[var(--sb-bg)] px-3 text-sm text-[var(--sb-ink)] outline-none" />
@@ -104,7 +104,7 @@ export function AppearancePanel({
 
           <section>
             <h3 className="text-sm font-semibold">Overview widgets</h3>
-            <p className="mt-1 text-xs text-[var(--sb-muted)]">Show, hide, or reorder the home modules.</p>
+            <p className="mt-1 text-xs text-[var(--sb-muted)]">Show, hide, or shuffle what sits on the home desk.</p>
             <div className="mt-3 space-y-2">
               {appearance.widgets.map((widget, index) => (
                 <div key={widget.id} className="flex items-center gap-2 rounded-lg border border-[var(--sb-line)] px-3 py-2">

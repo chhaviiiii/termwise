@@ -21,7 +21,7 @@ export function buildWeeklyBrief(memory: StudentMemory, now = new Date()): Weekl
   const startEarly = pickStartEarly(items);
 
   return {
-    weekLabel: `${format(start, "MMM d")}–${format(weekEnd, "MMM d")}`,
+    weekLabel: `${format(start, "MMM d")} - ${format(weekEnd, "MMM d")}`,
     rangeStart: format(start, "yyyy-MM-dd"),
     rangeEnd: format(weekEnd, "yyyy-MM-dd"),
     items,
@@ -40,7 +40,7 @@ function pickStartEarly(items: AcademicEvent[]) {
     reason:
       heavy.kind === "exam"
         ? `Start review now so ${heavy.courseCode} exam prep does not pile up the night before.`
-        : `Block time for ${heavy.courseCode} ${heavy.title} first — it is the heaviest item this week.`,
+        : `Give ${heavy.courseCode} ${heavy.title} a quiet block first. It's the heaviest thing this week.`,
   };
 }
 
@@ -49,23 +49,23 @@ export function formatBriefEmail(memory: StudentMemory, brief: WeeklyBrief, coll
     ? brief.items.map((item) => `- ${item.courseCode}: ${item.title} (${item.date}${item.time ? `, ${item.time}` : ""}, ~${item.estimatedHours}h)`).join("\n")
     : "- Nothing graded is due this week.";
   const collisionLines = collisions.length
-    ? collisions.map((collision) => `- ${collision.severity === "severe" ? "SEVERE" : "Watch"}: ${collision.events.map((event) => event.courseCode).join(", ")} on ${collision.start}–${collision.end}`).join("\n")
+    ? collisions.map((collision) => `- ${collision.severity === "severe" ? "SEVERE" : "Watch"}: ${collision.events.map((event) => event.courseCode).join(", ")} on ${collision.start} to ${collision.end}`).join("\n")
     : "- No 48-hour pileups in the next two weeks.";
 
-  return `Subject: Syllabot week-ahead brief (${brief.weekLabel})
+  return `Subject: Syllabot week-ahead (${brief.weekLabel})
 
 Hi ${memory.studentName.split(" ")[0]},
 
-What's due this week (${brief.weekLabel}), by course:
+Here's the week (${brief.weekLabel}), by course:
 ${dueLines}
 
-Estimated load: ${brief.totalHours}h of ${brief.capacityHours}h weekly capacity.
+Estimated load: ${brief.totalHours}h of ${brief.capacityHours}h.
 
-Deadline collisions in the next 2 weeks:
+Crowded stretches in the next 2 weeks:
 ${collisionLines}
 
 One thing to start early:
-${brief.startEarly ? `- ${brief.startEarly.title} — ${brief.startEarly.reason}` : "- Keep the lighter week and get ahead on readings."}
+${brief.startEarly ? `- ${brief.startEarly.title}: ${brief.startEarly.reason}` : "- Keep the lighter week and get ahead on readings."}
 
-— Syllabot`;
+Syllabot`;
 }

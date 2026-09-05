@@ -18,11 +18,11 @@ export function draftExtensionRequest(memory: StudentMemory, collision: Collisio
 
   const body = `Dear ${greeting},
 
-I am writing about ${target.title} in ${target.courseCode}, currently due ${target.date}${target.time ? ` at ${target.time}` : ""}. I have ${others.length} other major deadline${others.length === 1 ? "" : "s"} within a ${collision.hoursSpan}-hour window (${others.map((event) => `${event.courseCode} ${event.title} on ${event.date}`).join("; ")}), and I want to submit work that meets the standard of the course.
+I'm writing about ${target.title} in ${target.courseCode}, due ${target.date}${target.time ? ` at ${target.time}` : ""}. I have ${others.length} other major deadline${others.length === 1 ? "" : "s"} in a ${collision.hoursSpan}-hour window (${others.map((event) => `${event.courseCode} ${event.title} on ${event.date}`).join("; ")}), and I want to turn in work I'm proud of.
 
-Would it be possible to submit ${target.title} 48 hours later? I can share my current progress if that would be helpful.
+Would it be possible to submit ${target.title} 48 hours later? Happy to share where I am if that helps.
 
-Thank you for considering this request.
+Thank you for considering this.
 
 Sincerely,
 ${memory.studentName}`;
@@ -30,7 +30,7 @@ ${memory.studentName}`;
   return {
     toName: professor,
     toEmail: course?.email || "",
-    subject: `Request regarding ${target.courseCode} deadline`,
+    subject: `A note about the ${target.courseCode} deadline`,
     body,
     courseCode: target.courseCode,
     collisionId: collision.id,
