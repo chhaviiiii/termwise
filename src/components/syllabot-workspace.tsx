@@ -47,6 +47,7 @@ import {
   EXTRACT_SYLLABUS_SKILL,
   GROK_SETUP_STEPS,
   TERMWISE_IDENTITY,
+  TERMWISE_LISTING,
   WEEKLY_BRIEF_ROUTINE,
 } from "@/lib/syllabot/templates";
 import { SemesterCalendar } from "@/components/semester-calendar";
@@ -993,6 +994,7 @@ function BriefPanel({ memory, brief, collisions, onSchedule }: { memory: Student
 
 function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
   const blocks = [
+    { title: "0. Listing (Edit Profile)", body: TERMWISE_LISTING },
     { title: "1. Identity", body: TERMWISE_IDENTITY },
     { title: "2. Connect plugins", body: CONNECT_PLUGINS },
     { title: "3. extract-syllabus", body: EXTRACT_SYLLABUS_SKILL },

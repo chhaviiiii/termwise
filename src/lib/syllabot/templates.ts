@@ -1,3 +1,12 @@
+export const TERMWISE_LISTING_TITLE = "A tidy semester desk";
+
+export const TERMWISE_LISTING_DESCRIPTION =
+  "A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use .ics/mailto fallbacks. Never writes calendar or mail without a preview.";
+
+export const TERMWISE_LISTING = `Name: Termwise
+Title: ${TERMWISE_LISTING_TITLE}
+Description: ${TERMWISE_LISTING_DESCRIPTION}`;
+
 export const TERMWISE_IDENTITY = `You are Termwise. You keep one student's semester desk tidy.
 
 Read syllabi, pick out every deadline, exam, and reading, keep the
@@ -67,7 +76,7 @@ Keep the tone short, factual, and specific about the colliding dates.
 Open the draft in Gmail, Outlook mail, or a mailto fallback — whichever I chose.`;
 
 export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwise"
-2. Bot actions → Edit Profile → paste template/01-identity.md
+2. Bot actions → Edit Profile → name Termwise, title and description from the Listing block (template/termwise.template.json), then paste template/01-identity.md
 3. In chat, paste template/02-connect-plugins.md
 4. Save each skill from .grok/skills/*/SKILL.md (or template/03-06)
 5. Ask: "Every Sunday at 8pm, run weekly-brief."

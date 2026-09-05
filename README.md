@@ -29,17 +29,19 @@ The mark lives at `public/termwise-mark.svg` (sidebar and mobile header) and `sr
 
 Termwise is also a Grok Bot. In Grok: New → Create new agent → name it Termwise, then paste identity, skills, and the Sunday routine. Full steps are in `template/GROK_BOT.md`.
 
+Listing title and description (Edit Profile → the “Add to Grok Bot” page): **A tidy semester desk.** A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use .ics/mailto fallbacks. Never writes calendar or mail without a preview.
+
 Shareable files (no secrets, no student data):
 
 | File | What to paste |
 | --- | --- |
-| `template/01-identity.md` | Bot profile |
+| `template/01-identity.md` | Bot profile (includes listing title/description) |
+| `template/termwise.template.json` | Portable bundle, including the “Add to Grok Bot” listing title and description |
 | `template/02-connect-plugins.md` | First chat: Google Calendar + Gmail, or Outlook Calendar + Outlook mail |
 | `template/03-extract-syllabus.md` | Skill |
 | `template/04-check-collisions.md` | Skill |
 | `template/05-weekly-brief.md` | Sunday 8pm routine |
 | `template/06-draft-extension-request.md` | Skill |
-| `template/termwise.template.json` | Portable bundle |
 | `.grok/skills/*/SKILL.md` | Installable skills |
 
 Setup steps are in `template/GROK_BOT.md` and in the app's **Templates** view (copy buttons included). Recipients reconnect whichever they use — Google and/or Outlook. They do not inherit logins.
