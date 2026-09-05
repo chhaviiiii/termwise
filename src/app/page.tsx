@@ -3,8 +3,8 @@
 import { useRef, useState } from "react";
 import {
   AlertTriangle, Bell, BookOpen, CalendarDays, Check, CheckCircle2,
-  ChevronRight, Clock3, FileText, LayoutDashboard, Mail, Search,
-  Send, Settings, Sparkles, UploadCloud, X,
+  ChevronRight, Clock3, Download, FileText, LayoutDashboard, Mail, Search,
+  Send, Settings, Sparkles, UploadCloud, X, Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,19 +32,65 @@ const weekItems = [
   { course: "PHIL 160", title: "Response paper", due: "Fri, 5:00 PM", hours: 3, color: "#16856b" },
 ];
 
+type ExtractionResult = {
+  documents: { fileName: string; pages: number; email: string | null; eventCount: number }[];
+  counts: { deadlines: number; exams: number; readings: number; officeHours: number };
+};
+
 export default function Home() {
   const [showUpload, setShowUpload] = useState(false);
   const [showDraft, setShowDraft] = useState(false);
+  const [showCollision, setShowCollision] = useState(false);
+  const [showBrief, setShowBrief] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  const [extraction, setExtraction] = useState<ExtractionResult | null>(null);
+  const [uploadError, setUploadError] = useState("");
+  const [completed, setCompleted] = useState<string[]>([]);
+  const [toast, setToast] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  function processFiles() {
+  async function processFiles(files: File[]) {
+    if (!files.length) return;
     setProcessing(true);
-    window.setTimeout(() => {
-      setProcessing(false);
+    setUploadError("");
+    setExtraction(null);
+    const form = new FormData();
+    files.forEach((file) => form.append("files", file));
+
+    try {
+      const response = await fetch("/api/extract", { method: "POST", body: form });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not read those syllabi.");
+      setExtraction(data);
       setUploaded(true);
-    }, 1500);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Could not read those syllabi.");
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  function notify(message: string) {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2600);
+  }
+
+  function exportCalendar() {
+    const calendar = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Syllabus Sync//Semester Plan//EN",
+      "BEGIN:VEVENT", "UID:cs301-ps3@syllabussync", "DTSTART:20260917T235900", "DTEND:20260918T005900", "SUMMARY:CS 301 — Problem Set 3", "END:VEVENT",
+      "BEGIN:VEVENT", "UID:phil160-paper@syllabussync", "DTSTART:20260918T170000", "DTEND:20260918T180000", "SUMMARY:PHIL 160 — Response paper", "END:VEVENT",
+      "BEGIN:VEVENT", "UID:des220-project@syllabussync", "DTSTART:20261014T235900", "DTEND:20261015T005900", "SUMMARY:DES 220 — Interaction design project", "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+    const url = URL.createObjectURL(new Blob([calendar], { type: "text/calendar" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "syllabus-sync-semester.ics";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    notify("Calendar downloaded — ready to import anywhere.");
   }
 
   return (
@@ -89,7 +135,7 @@ export default function Home() {
         </div>
       </aside>
 
-      <section className="lg:pl-[244px]">
+      <section className="pb-24 lg:pb-0 lg:pl-[244px]">
         <header className="sticky top-0 z-20 flex h-[74px] items-center border-b border-[#dfe3dd] bg-[#fbfbf8]/95 px-5 backdrop-blur md:px-8 lg:px-10">
           <div className="grid size-9 place-items-center rounded-xl bg-[#f16d55] text-white lg:hidden"><Sparkles className="size-5" /></div>
           <div className="ml-3 lg:ml-0">
@@ -101,6 +147,9 @@ export default function Home() {
             <button className="relative grid size-9 place-items-center rounded-full text-[#65716e] hover:bg-[#eef0eb]" aria-label="Notifications">
               <Bell className="size-[18px]" /><span className="absolute right-2 top-2 size-1.5 rounded-full bg-[#ef684f]" />
             </button>
+            <Button onClick={exportCalendar} variant="outline" className="ml-1 hidden h-9 rounded-lg border-[#d9dfda] bg-white px-3 text-xs font-bold md:flex">
+              <Download className="size-3.5" /> Export calendar
+            </Button>
             <Button onClick={() => { setShowUpload(true); setUploaded(false); }} className="ml-1 h-9 rounded-lg bg-[#f16d55] px-3.5 text-xs font-bold text-white shadow-none hover:bg-[#dd5c45]">
               <UploadCloud className="size-4" /> <span className="hidden sm:inline">Add syllabus</span>
             </Button>
@@ -129,7 +178,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="h-9 rounded-lg border-[#e1c5be] bg-white text-xs font-bold">View week</Button>
+                <Button onClick={() => setShowCollision(true)} variant="outline" className="h-9 rounded-lg border-[#e1c5be] bg-white text-xs font-bold">View week</Button>
                 <Button onClick={() => setShowDraft(true)} className="h-9 rounded-lg bg-[#193c38] text-xs font-bold text-white hover:bg-[#112d2a]">Draft extension email</Button>
               </div>
             </CardContent>
@@ -182,13 +231,17 @@ export default function Home() {
                   <div className="divide-y divide-[#edf0eb]">
                     {weekItems.map((item, index) => (
                       <div key={item.title} className="group flex items-center gap-4 py-3.5 first:pt-0 last:pb-0">
-                        <button className="grid size-5 shrink-0 place-items-center rounded-full border-2 border-[#cbd3d0] text-white group-hover:border-[#27957c] group-hover:bg-[#27957c]" aria-label={`Complete ${item.title}`}><Check className="size-3" /></button>
-                        <div className="min-w-0 flex-1">
+                        <button
+                          onClick={() => setCompleted((current) => current.includes(item.title) ? current.filter((title) => title !== item.title) : [...current, item.title])}
+                          className={`grid size-5 shrink-0 place-items-center rounded-full border-2 transition ${completed.includes(item.title) ? "border-[#27957c] bg-[#27957c] text-white" : "border-[#cbd3d0] text-transparent group-hover:border-[#27957c]"}`}
+                          aria-label={`Complete ${item.title}`}
+                        ><Check className="size-3" /></button>
+                        <div className={`min-w-0 flex-1 ${completed.includes(item.title) ? "opacity-45" : ""}`}>
                           <div className="flex items-center gap-2">
                             <span className="size-2 rounded-full" style={{ background: item.color }} />
                             <span className="text-[10px] font-bold tracking-wide text-[#82908c]">{item.course}</span>
                           </div>
-                          <p className="mt-0.5 truncate text-sm font-bold">{item.title}</p>
+                          <p className={`mt-0.5 truncate text-sm font-bold ${completed.includes(item.title) ? "line-through" : ""}`}>{item.title}</p>
                         </div>
                         <div className="hidden text-right sm:block">
                           <p className="text-[10px] font-semibold text-[#8a9491]">DUE</p>
@@ -217,7 +270,7 @@ export default function Home() {
                     <Progress value={75} className="h-1.5 bg-white/10 [&>div]:bg-[#f58b75]" />
                     <div className="mt-3 flex items-center gap-2 text-[11px] text-[#b8ded4]"><CheckCircle2 className="size-3.5" /> Fits your weekly capacity</div>
                   </div>
-                  <Button className="mt-5 h-10 w-full rounded-lg bg-white text-xs font-bold text-[#193c38] hover:bg-[#f3f3ee]">Preview this week&apos;s brief <ChevronRight className="size-4" /></Button>
+                  <Button onClick={() => setShowBrief(true)} className="mt-5 h-10 w-full rounded-lg bg-white text-xs font-bold text-[#193c38] hover:bg-[#f3f3ee]">Preview this week&apos;s brief <ChevronRight className="size-4" /></Button>
                 </CardContent>
               </Card>
 
@@ -259,13 +312,14 @@ export default function Home() {
               </div>
               {!uploaded ? (
                 <>
-                  <input ref={fileRef} type="file" multiple accept=".pdf,application/pdf" className="hidden" onChange={processFiles} />
-                  <button onClick={() => fileRef.current?.click()} onDrop={(e) => { e.preventDefault(); processFiles(); }} onDragOver={(e) => e.preventDefault()} className="mt-6 grid w-full place-items-center rounded-2xl border-2 border-dashed border-[#b9cbc5] bg-[#f7fbf8] px-5 py-10 text-center transition hover:border-[#4e8b7d]">
+                  <input ref={fileRef} type="file" multiple accept=".pdf,application/pdf" className="hidden" onChange={(event) => processFiles(Array.from(event.target.files ?? []))} />
+                  <button disabled={processing} onClick={() => fileRef.current?.click()} onDrop={(e) => { e.preventDefault(); processFiles(Array.from(e.dataTransfer.files)); }} onDragOver={(e) => e.preventDefault()} className="mt-6 grid w-full place-items-center rounded-2xl border-2 border-dashed border-[#b9cbc5] bg-[#f7fbf8] px-5 py-10 text-center transition hover:border-[#4e8b7d] disabled:cursor-wait disabled:opacity-60">
                     <div className="grid size-12 place-items-center rounded-xl bg-[#e2f1eb] text-[#1c775f]"><UploadCloud className="size-6" /></div>
                     <p className="mt-4 text-sm font-bold">Drop PDF syllabi here</p>
                     <p className="mt-1 text-xs text-[#8b9592]">or click to browse · up to 10 files</p>
                   </button>
-                  {processing && <div className="mt-4"><div className="mb-2 flex justify-between text-xs font-semibold"><span>Reading your syllabi…</span><span>Finding deadlines</span></div><Progress value={68} className="h-2 [&>div]:bg-[#f16d55]" /></div>}
+                  {processing && <div className="mt-4"><div className="mb-2 flex justify-between text-xs font-semibold"><span>Reading your syllabi…</span><span>Finding deadlines</span></div><Progress value={68} className="h-2 animate-pulse [&>div]:bg-[#f16d55]" /></div>}
+                  {uploadError && <div className="mt-4 rounded-lg bg-[#fff0ec] px-3 py-2.5 text-xs font-semibold text-[#ad4938]">{uploadError}</div>}
                   <div className="mt-5 flex items-center justify-center gap-5 text-[10px] font-semibold text-[#85908d]">
                     <span className="flex items-center gap-1.5"><CalendarDays className="size-3.5" /> Google Calendar</span>
                     <span className="flex items-center gap-1.5"><Mail className="size-3.5" /> Gmail</span>
@@ -276,11 +330,15 @@ export default function Home() {
                 <div className="mt-6 text-center">
                   <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#e5f5ef] text-[#16856b]"><CheckCircle2 className="size-7" /></div>
                   <h3 className="mt-4 font-serif text-xl font-bold">Semester mapped!</h3>
-                  <p className="mt-1 text-sm text-[#75817d]">Found 47 deadlines, 6 exams, and 12 office-hour slots across 4 courses.</p>
+                  <p className="mt-1 text-sm text-[#75817d]">Read {extraction?.documents.length ?? 0} {extraction?.documents.length === 1 ? "syllabus" : "syllabi"} and classified every dated item we found.</p>
                   <div className="mt-5 grid grid-cols-3 gap-2">
-                    {["47 deadlines", "6 exams", "3 collisions"].map((stat) => <div key={stat} className="rounded-lg bg-[#f4f5f1] px-2 py-3 text-xs font-bold">{stat}</div>)}
+                    {[
+                      `${extraction?.counts.deadlines ?? 0} dated items`,
+                      `${extraction?.counts.exams ?? 0} exams`,
+                      `${extraction?.counts.readings ?? 0} readings`,
+                    ].map((stat) => <div key={stat} className="rounded-lg bg-[#f4f5f1] px-2 py-3 text-xs font-bold">{stat}</div>)}
                   </div>
-                  <Button onClick={() => setShowUpload(false)} className="mt-5 w-full rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]">Open semester plan</Button>
+                  <Button onClick={() => { setShowUpload(false); notify("Syllabi analyzed and ready to review."); }} className="mt-5 w-full rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]">Review extracted plan</Button>
                 </div>
               )}
             </CardContent>
@@ -308,10 +366,106 @@ export default function Home() {
               </div>
               <div className="mt-5 flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowDraft(false)} className="rounded-lg">Save for later</Button>
-                <Button onClick={() => setShowDraft(false)} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><Send className="size-4" /> Open in Gmail</Button>
+                <Button onClick={() => {
+                  window.location.href = "mailto:davis@university.edu?subject=Request%20regarding%20DES%20220%20project%20deadline&body=Dear%20Professor%20Davis%2C%0A%0AI%27m%20writing%20about%20the%20interaction%20design%20project%20due%20October%2014.%20I%20have%20two%20midterm%20exams%20scheduled%20within%20the%20preceding%2036%20hours.%20Would%20it%20be%20possible%20to%20submit%20by%20October%2016%20instead%3F%0A%0AThank%20you%2C%0ACasey%20Morgan";
+                  setShowDraft(false);
+                }} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><Send className="size-4" /> Open in email</Button>
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {showCollision && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && setShowCollision(false)}>
+          <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border-0 bg-white py-0 shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <Badge className="mb-2 bg-[#fff0ec] text-[#c44d38]">18 HOURS IN 36 HOURS</Badge>
+                  <h2 className="font-serif text-2xl font-bold">Week 7 collision map</h2>
+                  <p className="mt-1 text-sm text-[#75817d]">Flagged seven weeks early · October 12–14</p>
+                </div>
+                <button onClick={() => setShowCollision(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
+              </div>
+              <div className="relative mt-7 space-y-3 before:absolute before:bottom-5 before:left-[21px] before:top-5 before:w-px before:bg-[#d8ded9]">
+                {[
+                  { time: "MON · 9:00 AM", title: "CS 301 Midterm", detail: "Exam · estimated 6h prep", color: "#e85d46" },
+                  { time: "TUE · 11:59 PM", title: "DES 220 Final Project", detail: "Project · estimated 8h remaining", color: "#c58a1b" },
+                  { time: "WED · 2:00 PM", title: "ECON 210 Midterm", detail: "Exam · estimated 4h prep", color: "#6c63d9" },
+                ].map((item) => (
+                  <div key={item.title} className="relative flex gap-4 rounded-xl border border-[#e4e7e1] bg-[#fcfcfa] p-4">
+                    <span className="z-10 mt-1.5 size-3 shrink-0 rounded-full ring-4 ring-white" style={{ background: item.color }} />
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold tracking-wide text-[#85908c]">{item.time}</p>
+                      <p className="mt-1 text-sm font-bold">{item.title}</p>
+                      <p className="mt-0.5 text-xs text-[#7b8783]">{item.detail}</p>
+                    </div>
+                    <AlertTriangle className="size-4 text-[#db624e]" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 rounded-xl bg-[#eef7f3] p-4">
+                <div className="flex gap-3">
+                  <Zap className="mt-0.5 size-5 shrink-0 text-[#17836a]" />
+                  <div><p className="text-sm font-bold">Best move: ask for a 48-hour project extension</p><p className="mt-1 text-xs leading-relaxed text-[#64746f]">The project is the only flexible deadline, and your draft cites the conflict without oversharing.</p></div>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { exportCalendar(); setShowCollision(false); }} className="rounded-lg"><Download className="size-4" /> Export week</Button>
+                <Button onClick={() => { setShowCollision(false); setShowDraft(true); }} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><Mail className="size-4" /> Review email draft</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {showBrief && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && setShowBrief(false)}>
+          <Card className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border-0 bg-[#f9faf6] py-0 shadow-2xl">
+            <CardContent className="p-0">
+              <div className="bg-[#193c38] p-6 text-white">
+                <div className="flex items-start justify-between">
+                  <div className="grid size-10 place-items-center rounded-xl bg-white/10"><Sparkles className="size-5 text-[#ffb3a2]" /></div>
+                  <button onClick={() => setShowBrief(false)} className="grid size-8 place-items-center rounded-full bg-white/10"><X className="size-4" /></button>
+                </div>
+                <p className="mt-6 text-[10px] font-bold tracking-[.18em] text-[#9fd0c3]">YOUR WEEK AHEAD · SEP 14–20</p>
+                <h2 className="mt-2 font-serif text-3xl font-bold">A focused 9-hour week.</h2>
+                <p className="mt-2 text-sm leading-relaxed text-white/65">Three deliverables, no deadline collisions, and one thing worth starting before Wednesday.</p>
+              </div>
+              <div className="p-6">
+                <p className="text-[10px] font-bold tracking-[.15em] text-[#7f8b87]">THE GAME PLAN</p>
+                <div className="mt-3 space-y-2">
+                  {weekItems.map((item, index) => (
+                    <div key={item.title} className="flex items-center gap-3 rounded-xl border border-[#e2e6df] bg-white p-3.5">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style={{ background: item.color }}>{index + 1}</span>
+                      <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{item.title}</p><p className="text-[10px] text-[#7e8985]">{item.course} · {item.due}</p></div>
+                      <span className="text-xs font-bold">{item.hours}h</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 rounded-xl border border-[#f0d2c9] bg-[#fff5f1] p-4">
+                  <p className="flex items-center gap-2 text-xs font-bold text-[#bd4d39]"><Zap className="size-4" /> START EARLY</p>
+                  <p className="mt-2 text-sm font-bold">Block 90 minutes for Problem Set 3 on Monday.</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[#78827f]">Question 4 depends on this week&apos;s graph theory lecture. Starting now leaves time for Wednesday office hours.</p>
+                </div>
+                <Button onClick={() => { setShowBrief(false); notify("Weekly brief schedule is active for Sundays at 8 PM."); }} className="mt-5 w-full rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><CheckCircle2 className="size-4" /> Sunday brief is scheduled</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <nav className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-2xl border border-white/10 bg-[#193c38]/95 px-2 py-2 text-white shadow-xl backdrop-blur lg:hidden">
+        <MobileNav icon={<LayoutDashboard />} label="Overview" active />
+        <MobileNav icon={<CalendarDays />} label="Semester" />
+        <MobileNav icon={<AlertTriangle />} label="Conflicts" count="3" />
+        <MobileNav icon={<Mail />} label="Briefs" />
+      </nav>
+
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-[#193c38] px-4 py-2.5 text-xs font-bold text-white shadow-xl lg:bottom-6">
+          <CheckCircle2 className="size-4 text-[#8ed2be]" /> {toast}
         </div>
       )}
     </main>
@@ -324,6 +478,16 @@ function NavItem({ icon, label, active, count }: { icon: React.ReactNode; label:
       <span className="[&>svg]:size-[17px]">{icon}</span>
       <span>{label}</span>
       {count && <span className="ml-auto grid size-5 place-items-center rounded-full bg-[#f16d55] text-[10px] font-bold text-white">{count}</span>}
+    </button>
+  );
+}
+
+function MobileNav({ icon, label, active, count }: { icon: React.ReactNode; label: string; active?: boolean; count?: string }) {
+  return (
+    <button className={`relative flex min-w-16 flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[9px] font-semibold ${active ? "bg-white/10 text-white" : "text-white/55"}`}>
+      <span className="[&>svg]:size-[17px]">{icon}</span>
+      <span>{label}</span>
+      {count && <span className="absolute right-2 top-0 grid size-4 place-items-center rounded-full bg-[#f16d55] text-[8px] text-white">{count}</span>}
     </button>
   );
 }

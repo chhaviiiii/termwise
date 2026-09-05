@@ -1,6 +1,6 @@
 # Syllabus Sync
 
-A polished prototype for a student copilot that turns syllabus PDFs into a semester plan. It highlights deadline collisions, estimates weekly workload, previews Sunday planning briefs, and drafts extension-request emails for review.
+A student copilot that turns syllabus PDFs into a semester plan. It extracts and classifies dated items from real PDFs, highlights deadline collisions, estimates weekly workload, previews Sunday planning briefs, exports an `.ics` calendar, and drafts extension-request emails for review.
 
 ## Run locally
 
@@ -11,9 +11,15 @@ npm run dev -- --port 43127
 
 Open [http://localhost:43127](http://localhost:43127).
 
-## Prototype notes
+## What works
 
-The dashboard and interactions are ready for product demos. PDF extraction and Google Calendar/Gmail connections are represented by a realistic mocked workflow; production OAuth credentials and a document-extraction service are not included.
+- Upload up to 10 text-based PDF syllabi (15 MB each)
+- Server-side extraction of dates, exams, readings, assignments, and office hours
+- Interactive collision map and extension-request draft
+- Weekly workload brief, task completion, and calendar export
+- Responsive desktop and mobile dashboard
+
+Google Calendar and Gmail buttons use credential-free fallbacks (`.ics` download and `mailto:`). Production two-way sync requires Google OAuth credentials.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
