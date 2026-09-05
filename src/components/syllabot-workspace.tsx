@@ -56,12 +56,19 @@ type ChatMessage = { id: string; role: "bot" | "user"; text: string };
 
 const STORAGE_KEY = "termwise-memory-v1";
 const LEGACY_STORAGE_KEYS = ["syllabot-memory-v1"];
-const emptyMemory = (): StudentMemory => ({
+const EMPTY_MEMORY: StudentMemory = {
   studentName: DEFAULT_MEMORY.studentName,
   weeklyCapacityHours: DEFAULT_MEMORY.weeklyCapacityHours,
   courses: [],
   events: [],
   extensions: DEFAULT_MEMORY.extensions,
+};
+const emptyMemory = (): StudentMemory => ({
+  studentName: EMPTY_MEMORY.studentName,
+  weeklyCapacityHours: EMPTY_MEMORY.weeklyCapacityHours,
+  courses: [],
+  events: [],
+  extensions: EMPTY_MEMORY.extensions,
 });
 
 let memoryCache = emptyMemory();
@@ -106,7 +113,7 @@ function formatDate(value: string) {
 export function SyllabotWorkspace() {
   const [view, setView] = useState<View>("overview");
   const appearance = useSyncExternalStore(subscribeAppearance, getAppearance, () => DEFAULT_APPEARANCE);
-  const memory = useSyncExternalStore(subscribeMemory, () => memoryCache, emptyMemory);
+  const memory = useSyncExternalStore(subscribeMemory, () => memoryCache, () => EMPTY_MEMORY);
   const setMemory = (update: StudentMemory | ((current: StudentMemory) => StudentMemory)) => {
     writeMemory(typeof update === "function" ? update(memoryCache) : update);
   };
