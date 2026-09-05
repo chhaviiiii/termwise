@@ -84,7 +84,7 @@ function extractCourse(text: string, fileName: string, colorIndex: number): Cour
     lines.find((line) => COURSE_CODE.test(line)) ??
     lines[0] ??
     code;
-  const name = nameLine.replace(COURSE_CODE, "").replace(/^[—–\-:|]+\s*/, "").trim() || code;
+  const name = nameLine.replace(COURSE_CODE, "").replace(/^[—–\-:|\s]+/, "").trim() || code;
   const professor =
     header.match(/(?:professor|instructor|prof\.?)\s*[:\-–]\s*([^(\n]+)/i)?.[1]?.replace(/,.+$/, "").trim() ??
     "Professor";
