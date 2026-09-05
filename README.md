@@ -2,7 +2,7 @@
 
 A working academic desk for the Student Build Challenge. Drop in syllabi, confirm what you see, catch 48-hour pileups, and draft extension emails. Termwise never sends them.
 
-The same identity, skills, and Sunday 8pm note live in the Grok Bot template so others can install it with their own Google Calendar / Gmail or Outlook Calendar / Outlook mail.
+The same identity, skills, and Sunday 8pm note live in the Grok Bot template so others can install it with their own Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Apple Calendar.
 
 ## Run the working app
 
@@ -17,11 +17,11 @@ Open [http://localhost:43127](http://localhost:43127).
 2. Review the extraction table (course, kind, when, hours, weight and location if the syllabus listed them)
 3. Edit or skip rows. Suggested study blocks stay off until you keep them. **Add to calendar**. Nothing is written before this.
 4. Confirmed items land on the color-coded Termwise semester calendar, including weekly office hours. Click an event for professor, office hours, late-policy notes, and pileup flags.
-5. Pick a destination: **Google Calendar / Gmail**, **Outlook Calendar / Outlook mail**, or **Fallback: .ics download / mailto draft**. Google or Outlook opens one compose or subscribe tab. Fallback downloads a reminder-ready `.ics` (Apple Calendar opens it too). Exams and projects can also be added one click at a time. Nothing is written without your click.
+5. Pick a destination: **Google Calendar / Gmail**, **Outlook Calendar / Outlook mail**, **Apple Calendar**, or **Fallback: .ics download / mailto draft**. Google or Outlook opens one compose or subscribe tab. Apple downloads `.ics` (optional `webcal://` subscribe). Fallback is the same file/mailto path when you do not want a vendor. Exams and projects can also be added one click at a time. Nothing is written without your click.
 6. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
 7. Review the extension draft. Termwise will not send it. Choose Gmail, Outlook mail, or Fallback `mailto:`.
 
-Paste text or upload a text-based PDF. Open **Customize** to change theme, accent color, course colors, density, calendar/mail destination, and which overview widgets show, and in what order. Settings stay in the browser.
+Paste text or upload a text-based PDF. Open **Customize** to change theme, accent color, course colors, density, timezone, calendar/mail destination, and which overview widgets show, and in what order. Settings stay in the browser.
 
 The mark lives at `public/termwise-mark.svg` (sidebar and mobile header) and `src/app/icon.svg` (favicon).
 
@@ -29,7 +29,7 @@ The mark lives at `public/termwise-mark.svg` (sidebar and mobile header) and `sr
 
 Termwise is also a Grok Bot. In Grok: New → Create new agent → name it Termwise, then paste identity, skills, and the Sunday routine. Full steps are in `template/GROK_BOT.md`.
 
-Listing title and description (Edit Profile → the “Add to Grok Bot” page): **A tidy semester desk.** A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.
+Listing title and description (Edit Profile → the “Add to Grok Bot” page): **A tidy semester desk.** A student semester desk: extract syllabus deadlines, confirm or edit the table, catch 48-hour pileups, keep optional work-back study blocks, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Apple Calendar — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.
 
 Shareable files (no secrets, no student data):
 
@@ -37,7 +37,7 @@ Shareable files (no secrets, no student data):
 | --- | --- |
 | `template/01-identity.md` | Bot profile (includes listing title/description) |
 | `template/termwise.template.json` | Portable bundle, including the “Add to Grok Bot” listing title and description |
-| `template/02-connect-plugins.md` | First chat: Google Calendar + Gmail, or Outlook Calendar + Outlook mail |
+| `template/02-connect-plugins.md` | First chat: Google, Outlook, Apple, or Fallback |
 | `template/03-extract-syllabus.md` | Skill |
 | `template/04-check-collisions.md` | Skill |
 | `template/05-weekly-brief.md` | Sunday 8pm routine |
@@ -45,7 +45,7 @@ Shareable files (no secrets, no student data):
 | `template/07-study-tonight.md` | Skill |
 | `.grok/skills/*/SKILL.md` | Installable skills |
 
-Setup steps are in `template/GROK_BOT.md` and in the app's **Templates** view (copy buttons included). Recipients reconnect whichever they use — Google and/or Outlook. They do not inherit logins.
+Setup steps are in `template/GROK_BOT.md` and in the app's **Templates** view (copy buttons included). Recipients reconnect whichever they use — Google, Outlook, or Apple. They do not inherit logins.
 
 ## Skills
 

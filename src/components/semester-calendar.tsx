@@ -27,7 +27,7 @@ import {
   type Course,
 } from "@/lib/syllabot";
 
-type Filter = "all" | "exam" | "work" | "office-hour";
+type Filter = "all" | "exam" | "work" | "study" | "office-hour";
 
 function dayKey(date: Date) {
   return format(date, "yyyy-MM-dd");
@@ -36,8 +36,9 @@ function dayKey(date: Date) {
 function matchesFilter(event: AcademicEvent, filter: Filter) {
   if (filter === "all") return true;
   if (filter === "exam") return event.kind === "exam";
+  if (filter === "study") return event.kind === "study";
   if (filter === "office-hour") return event.kind === "office-hour";
-  return event.kind === "assignment" || event.kind === "deadline" || event.kind === "reading" || event.kind === "study";
+  return event.kind === "assignment" || event.kind === "deadline" || event.kind === "reading";
 }
 
 export function SemesterCalendar({
@@ -128,6 +129,7 @@ export function SemesterCalendar({
               ["all", "All"],
               ["exam", "Exams"],
               ["work", "Work"],
+              ["study", "Study"],
               ["office-hour", "Office hours"],
             ] as const).map(([value, labelText]) => (
               <button key={value} type="button" onClick={() => setFilter(value)} className={`px-2.5 py-1 text-[11px] font-medium ${filter === value ? "bg-[var(--sb-ink)] text-[var(--sb-bg)]" : "border border-[var(--sb-line)] text-[var(--sb-muted)]"}`}>
@@ -167,7 +169,7 @@ export function SemesterCalendar({
                           type="button"
                           title={eventHoverSummary(item, course, collision)}
                           onClick={() => { setSelected(item); setSelectedDay(key); }}
-                          className={`w-full truncate border-l-2 bg-[var(--sb-bg)] px-1.5 py-1 text-left text-[10px] leading-tight ${item.kind === "exam" ? "font-semibold" : ""}`}
+                          className={`w-full truncate border-l-2 bg-[var(--sb-bg)] px-1.5 py-1 text-left text-[10px] leading-tight ${item.kind === "exam" ? "font-semibold" : ""} ${item.kind === "study" ? "italic text-[var(--sb-muted)]" : ""}`}
                           style={{ borderColor: course?.color ?? "var(--sb-ink)" }}
                         >
                           {item.time ? `${item.time.split(" ")[0]} ` : ""}{item.title}
@@ -203,6 +205,7 @@ export function SemesterCalendar({
                     <span className="min-w-0 flex-1">
                       <span className="block text-[11px] text-[var(--sb-muted)]">
                         {item.courseCode} · {displayKind(item)}
+                        {item.kind === "study" ? " · work-back" : ""}
                         {item.weight ? ` · ${item.weight}` : ""}
                         {collision ? " · pileup" : ""}
                       </span>

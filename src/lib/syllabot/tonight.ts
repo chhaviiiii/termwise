@@ -19,7 +19,7 @@ export function buildStudyTonight(memory: StudentMemory, now = new Date()): Toni
     event,
     reason:
       event.kind === "study"
-        ? "Suggested block — still yours to skip."
+        ? "Kept study block from listed hours."
         : event.date === todayKey
           ? "Due today."
           : event.kind === "exam"

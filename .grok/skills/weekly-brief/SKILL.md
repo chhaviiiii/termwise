@@ -10,10 +10,11 @@ Termwise routine. Schedule: every Sunday at 8:00 PM in the student's local timez
 
 ## Note must include
 
-- What's due this coming week, by course
+- What's due this coming week, by course (confirmed events only)
 - Any deadline collisions in the next 2 weeks
 - One thing the student should start early
 - Estimated hours vs remembered weekly capacity
+- Kept study blocks this week (skip suggested ones the student never kept)
 
 ## Safety
 

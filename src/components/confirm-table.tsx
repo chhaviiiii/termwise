@@ -29,17 +29,32 @@ export function ConfirmTable({
   skipped,
   onChange,
   onToggle,
+  onKeepSuggested,
+  onSkipSuggested,
 }: {
   events: AcademicEvent[];
   courses: Course[];
   skipped: string[];
   onChange: (id: string, patch: Partial<AcademicEvent>) => void;
   onToggle: (id: string) => void;
+  onKeepSuggested?: () => void;
+  onSkipSuggested?: () => void;
 }) {
   const skippedSet = new Set(skipped);
 
+  const suggested = events.filter((event) => event.suggested);
+
   return (
     <div className="space-y-3">
+      {suggested.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] text-[var(--sb-muted)]">{suggested.length} suggested study block{suggested.length === 1 ? "" : "s"} from listed hours — off until you keep them.</p>
+          <div className="flex gap-2">
+            {onKeepSuggested && <button type="button" className="sb-btn-ghost h-8" onClick={onKeepSuggested}>Keep suggested</button>}
+            {onSkipSuggested && <button type="button" className="sb-btn-ghost h-8" onClick={onSkipSuggested}>Skip suggested</button>}
+          </div>
+        </div>
+      )}
       <div className="overflow-x-auto rounded-xl border border-[var(--sb-line)]">
         <table className="w-full min-w-[820px] text-left text-xs">
           <thead className="bg-[var(--sb-soft)] text-[var(--sb-muted)]">
@@ -66,6 +81,7 @@ export function ConfirmTable({
                   <td className="px-2 py-1.5 font-semibold">
                     {event.courseCode}
                     {event.suggested && <span className="ml-1 font-normal text-[var(--sb-muted)]">suggested</span>}
+                    {!event.suggested && event.review === "new" && <span className="ml-1 font-normal text-[var(--sb-muted)]">new</span>}
                     {event.review === "changed" && <span className="ml-1 font-normal text-[var(--sb-warn)]">changed</span>}
                     {event.review === "same" && <span className="ml-1 font-normal text-[var(--sb-muted)]">same</span>}
                   </td>

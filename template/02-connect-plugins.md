@@ -1,17 +1,14 @@
 # Connect plugins
 
-Paste this in the Termwise chat after creating the Bot.
+Recipients reconnect their own Calendar/Gmail and/or Outlook. They do not inherit the publisher’s logins.
 
-Connect Google Calendar + Gmail and/or Outlook Calendar + Outlook
-mail, whichever I use, so you can read my syllabi (I'll paste or
-upload them) and keep the dates in one place.
+Termwise does **not** ship Microsoft or Google OAuth, API keys, or student PII. Recipients pick a destination:
 
-I will reconnect whichever I use — Google Calendar / Gmail and/or
-Outlook Calendar / Outlook mail. Do not expect to inherit someone
-else's logins.
+- **Google Calendar / Gmail** — Compose a Gmail draft (`mailto` / Gmail compose). Open Google Calendar. Download `.ics`. Optional public subscribe URL.
+- **Outlook Calendar / Outlook mail** — Compose an Outlook draft. Open Outlook Calendar on the web. Download `.ics`. Optional public subscribe URL.
+- **Apple Calendar** — Download `.ics` and import on iPhone/Mac. Optional `webcal://` subscribe URL if the student hosts a public feed.
+- **Fallback** — Download `.ics` or open a `mailto:` draft. Use this when they do not want a vendor calendar.
 
-Until those plugins are connected, use Termwise Fallback:
-- Show a confirmation table before creating events
-- Fallback: .ics download I can import to Google Calendar or Outlook Calendar
-- Fallback: mailto draft I can review in Gmail or Outlook mail
-Never send or write without my confirmation.
+Never write a calendar or send mail without confirmation.
+
+If a plugin is missing, say so and use the fallback. Do not ask for API keys or passwords.

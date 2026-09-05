@@ -43,6 +43,11 @@ export function EventDrawer({
           <h3 className="mt-1 text-lg font-semibold tracking-tight">{event.title}</h3>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <span className="rounded-full bg-[var(--sb-soft)] px-2 py-0.5 text-[11px] font-medium">{displayKind(event)}</span>
+            {event.kind === "study" && (
+              <span className="rounded-full bg-[var(--sb-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sb-muted)]">
+                work-back · not a due date
+              </span>
+            )}
             {collision && (
               <span className="rounded-full px-2 py-0.5 text-[11px] font-medium text-[var(--sb-warn)]">
                 {collision.severity} pileup · {collision.events.length} majors

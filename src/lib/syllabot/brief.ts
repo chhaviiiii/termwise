@@ -33,7 +33,8 @@ export function buildWeeklyBrief(memory: StudentMemory, now = new Date()): Weekl
 }
 
 function pickStartEarly(items: AcademicEvent[]) {
-  const heavy = [...items].sort((a, b) => b.estimatedHours - a.estimatedHours)[0];
+  const graded = items.filter((item) => item.kind !== "study");
+  const heavy = [...(graded.length ? graded : items)].sort((a, b) => b.estimatedHours - a.estimatedHours)[0];
   if (!heavy) return null;
   return {
     title: heavy.title,
@@ -45,9 +46,14 @@ function pickStartEarly(items: AcademicEvent[]) {
 }
 
 export function formatBriefEmail(memory: StudentMemory, brief: WeeklyBrief, collisions: Collision[]) {
-  const dueLines = brief.items.length
-    ? brief.items.map((item) => `- ${item.courseCode}: ${item.title} (${item.date}${item.time ? `, ${item.time}` : ""}, ~${item.estimatedHours}h${item.weight ? `, ${item.weight}` : ""}${item.location ? `, ${item.location}` : ""})`).join("\n")
+  const due = brief.items.filter((item) => item.kind !== "study");
+  const study = brief.items.filter((item) => item.kind === "study");
+  const dueLines = due.length
+    ? due.map((item) => `- ${item.courseCode}: ${item.title} (${item.date}${item.time ? `, ${item.time}` : ""}, ~${item.estimatedHours}h${item.weight ? `, ${item.weight}` : ""}${item.location ? `, ${item.location}` : ""})`).join("\n")
     : "- Nothing graded is due this week.";
+  const studyLines = study.length
+    ? study.map((item) => `- ${item.courseCode}: ${item.title} (${item.date}${item.time ? `, ${item.time}` : ""}, ~${item.estimatedHours}h)`).join("\n")
+    : "- No kept study blocks this week.";
   const collisionLines = collisions.length
     ? collisions.map((collision) => `- ${collision.severity === "severe" ? "SEVERE" : "Watch"}: ${collision.events.map((event) => event.courseCode).join(", ")} on ${collision.start} to ${collision.end}`).join("\n")
     : "- No 48-hour pileups in the next two weeks.";
@@ -58,6 +64,9 @@ Hi ${memory.studentName.split(" ")[0]},
 
 Here's the week (${brief.weekLabel}), by course:
 ${dueLines}
+
+Kept study blocks:
+${studyLines}
 
 Estimated load: ${brief.totalHours}h of ${brief.capacityHours}h.
 

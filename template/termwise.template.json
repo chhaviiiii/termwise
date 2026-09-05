@@ -1,12 +1,13 @@
 {
   "name": "Termwise",
   "title": "A tidy semester desk",
-  "description": "A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.",
+  "description": "A student semester desk: extract syllabi, confirm or edit the table, catch 48-hour pileups, keep optional work-back study blocks, draft extensions, and send a Sunday brief. Connect Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Apple Calendar — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.",
   "hashtag": "#GrokBotForStudents",
   "plugins": ["Google Calendar", "Gmail", "Outlook Calendar", "Outlook mail"],
   "memory": [
-    "courses, professors, and emails",
+    "courses, professors, emails, office hours, late policy",
     "weekly study/work capacity in hours",
+    "timezone and calendar/mail destination preference",
     "past extension requests and professor responses"
   ],
   "approvalBoundary": "Never send email or write calendar events without a preview, unless the student said auto-approve.",
@@ -20,7 +21,7 @@
     {
       "name": "weekly-brief",
       "schedule": "Every Sunday at 8:00 PM",
-      "output": "Week-ahead note: dues by course, collisions in 2 weeks, one thing to start early"
+      "output": "Week-ahead note: dues by course, collisions in 2 weeks, hours vs capacity, one thing to start early"
     }
   ]
 }

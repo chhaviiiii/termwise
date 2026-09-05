@@ -57,6 +57,7 @@ export function eventHoverSummary(event: AcademicEvent, course?: Course, collisi
     event.weight,
     course?.professor && course.professor !== "Professor" ? course.professor : "",
     collision ? `${collision.severity} pileup` : "",
+    event.kind === "study" ? "work-back study block" : "",
   ].filter(Boolean);
   return parts.join(" · ");
 }

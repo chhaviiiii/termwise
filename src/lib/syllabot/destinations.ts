@@ -64,8 +64,11 @@ export const DESTINATIONS: Record<CalendarDestination, DestinationInfo> = {
   },
 };
 
+export const DESTINATION_PICKER_HINT =
+  "Google Calendar / Gmail, Outlook Calendar / Outlook mail, Apple Calendar, or Fallback: .ics download / mailto draft";
+
 export const DESTINATION_RECONNECT_NOTE =
-  "Grok Bot recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. They pick; they do not inherit logins.";
+  "Grok Bot recipients reconnect whichever they use — Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Apple Calendar. They pick; they do not inherit logins.";
 
 export function isDestination(value: unknown): value is CalendarDestination {
   return value === "google" || value === "outlook" || value === "apple" || value === "file";
