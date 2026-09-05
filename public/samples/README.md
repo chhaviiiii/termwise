@@ -1,6 +1,6 @@
 # Demo syllabi
 
-Text-based PDFs for Termwise and Grok Bot. They use the same Fall 2026 dates as **Load demo semester**.
+Packed Fall 2026 syllabi for Termwise and Grok Bot. Same dates as **Load demo semester**: weekly readings, quizzes, labs, papers, studio critiques, plus the week-7 pileup (CS midterm, ECON midterm, DES project).
 
 | File | Course |
 | --- | --- |

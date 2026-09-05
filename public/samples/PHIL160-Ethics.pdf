@@ -2,51 +2,67 @@
 %‚„œ”
 1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
 2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
-3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Annots [] >> endobj
-4 0 obj << /Length 980 >> stream
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >> endobj
+4 0 obj << /Length 1315 >> stream
 BT
-/F2 16 Tf
-72 720 Td
-(PHIL 160 - Ethics & Technology) Tj
-/F1 10 Tf
-0 -22 Td
-(Fall 2026  |  Philosophy) Tj
-/F1 11 Tf
+1 0 0 1 72 720 Tm
 16 TL
+/F2 16 Tf
+(PHIL 160 - Ethics & Technology) Tj
 T*
+/F1 10 Tf
+(Fall 2026  |  Philosophy) Tj
+T*
+/F1 11 Tf
 (Professor: Dr. Morgan \(morgan@university.edu\)) Tj
 T*
 (Office hours: Thursday 11:00 AM-12:00 PM) Tj
 T*
 (Late policy: One 48-hour grace window per term; after that, 5% per day.) Tj
 T*
-0 -6 Td
 T*
-(A writing-heavy seminar on ethics, computing, and responsibility.) Tj
+(Writing-heavy seminar on ethics, computing, and responsibility.) Tj
 T*
-(Papers must use course readings. The midterm paper is usually the) Tj
+(Papers must use course readings. A paper is the flexible item in a) Tj
 T*
-(most flexible item in a 48-hour pileup, not an exam.) Tj
+(pileup, not an in-class exam.) Tj
 T*
-0 -6 Td
 T*
-(Course calendar) Tj
+(Readings) Tj
 T*
-(Sep 12, 2026 - Response paper 1 due 5:00 PM \(10%\)) Tj
+(Sep 5, 2026 - Reading: Chapter 1) Tj
+T*
+(Sep 19, 2026 - Reading: Chapter 3) Tj
 T*
 (Sep 26, 2026 - Reading: Chapters 4-5) Tj
 T*
-(Oct 20, 2026 - Midterm paper due 5:00 PM \(25%\)) Tj
+(Oct 10, 2026 - Reading: Chapter 7) Tj
+T*
+(Oct 31, 2026 - Reading: Chapter 9) Tj
+T*
+(Nov 21, 2026 - Reading: Chapter 12) Tj
+T*
+T*
+(Posts and papers) Tj
+T*
+(Sep 10, 2026 - Discussion post 1 due 11:59 PM \(3%\)) Tj
+T*
+(Sep 12, 2026 - Response paper 1 due 5:00 PM \(8%\)) Tj
+T*
+(Oct 3, 2026 - Response paper 2 due 5:00 PM \(8%\)) Tj
+T*
+(Oct 17, 2026 - Discussion post 2 due 11:59 PM \(3%\)) Tj
+T*
+(Oct 20, 2026 - Midterm paper due 5:00 PM \(20%\)) Tj
+T*
+(Nov 7, 2026 - Response paper 3 due 5:00 PM \(8%\)) Tj
 T*
 (Nov 14, 2026 - Presentation \(15%\)) Tj
 T*
-(Dec 8, 2026 - Final paper due 5:00 PM \(30%\)) Tj
+(Dec 1, 2026 - Workshop draft due 5:00 PM \(5%\)) Tj
 T*
-0 -6 Td
+(Dec 8, 2026 - Final paper due 5:00 PM \(25%\)) Tj
 T*
-(Seminar discussion is not given a dated weight here. Use the one) Tj
-T*
-(grace window in writing. Do not invent extra paper due dates.) Tj
 ET
 endstream
 endobj
@@ -59,11 +75,11 @@ xref
 0000000015 00000 n 
 0000000064 00000 n 
 0000000121 00000 n 
-0000000268 00000 n 
-0000001299 00000 n 
-0000001369 00000 n 
-0000001444 00000 n 
+0000000257 00000 n 
+0000001624 00000 n 
+0000001694 00000 n 
+0000001769 00000 n 
 trailer << /Size 8 /Root 1 0 R /Info 7 0 R >>
 startxref
-1525
+1850
 %%EOF

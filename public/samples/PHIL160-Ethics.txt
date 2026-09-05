@@ -1,11 +1,28 @@
 PHIL 160 - Ethics & Technology
+Fall 2026  |  Philosophy
 Professor: Dr. Morgan (morgan@university.edu)
 Office hours: Thursday 11:00 AM-12:00 PM
 Late policy: One 48-hour grace window per term; after that, 5% per day.
 
-Course calendar
-Sep 12, 2026 - Response paper 1 due 5:00 PM (10%)
+Writing-heavy seminar on ethics, computing, and responsibility.
+Papers must use course readings. A paper is the flexible item in a
+pileup, not an in-class exam.
+
+Readings
+Sep 5, 2026 - Reading: Chapter 1
+Sep 19, 2026 - Reading: Chapter 3
 Sep 26, 2026 - Reading: Chapters 4-5
-Oct 20, 2026 - Midterm paper due 5:00 PM (25%)
+Oct 10, 2026 - Reading: Chapter 7
+Oct 31, 2026 - Reading: Chapter 9
+Nov 21, 2026 - Reading: Chapter 12
+
+Posts and papers
+Sep 10, 2026 - Discussion post 1 due 11:59 PM (3%)
+Sep 12, 2026 - Response paper 1 due 5:00 PM (8%)
+Oct 3, 2026 - Response paper 2 due 5:00 PM (8%)
+Oct 17, 2026 - Discussion post 2 due 11:59 PM (3%)
+Oct 20, 2026 - Midterm paper due 5:00 PM (20%)
+Nov 7, 2026 - Response paper 3 due 5:00 PM (8%)
 Nov 14, 2026 - Presentation (15%)
-Dec 8, 2026 - Final paper due 5:00 PM (30%)
+Dec 1, 2026 - Workshop draft due 5:00 PM (5%)
+Dec 8, 2026 - Final paper due 5:00 PM (25%)

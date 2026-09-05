@@ -2,51 +2,65 @@
 %‚„œ”
 1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
 2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
-3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Annots [] >> endobj
-4 0 obj << /Length 1080 >> stream
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >> endobj
+4 0 obj << /Length 1358 >> stream
 BT
-/F2 16 Tf
-72 720 Td
-(DES 220 - Interaction Design) Tj
-/F1 10 Tf
-0 -22 Td
-(Fall 2026  |  Design) Tj
-/F1 11 Tf
+1 0 0 1 72 720 Tm
 16 TL
+/F2 16 Tf
+(DES 220 - Interaction Design) Tj
 T*
+/F1 10 Tf
+(Fall 2026  |  Design) Tj
+T*
+/F1 11 Tf
 (Professor: Prof. Davis \(davis@university.edu\)) Tj
 T*
 (Office hours: Friday 2:00-3:30 PM, Studio B) Tj
 T*
 (Late policy: Studio critiques cannot be late; project work loses a letter step per day.) Tj
 T*
-0 -6 Td
 T*
-(Studio course. You will research, prototype, test, and ship a small) Tj
+(Studio course. Research, prototype, test, and ship a small interaction.) Tj
 T*
-(interaction. Critiques are in person in the studio. The project due) Tj
+(Critiques are in person. The October project is a major deadline and) Tj
 T*
-(in October is a major deadline and often collides with other midterms.) Tj
+(often collides with midterms in other classes.) Tj
 T*
-0 -6 Td
 T*
-(Project milestones) Tj
+(Studio days) Tj
 T*
-(Sep 9, 2026 - Studio critique, Studio B) Tj
+(Sep 9, 2026 - Critique 1, Studio B) Tj
+T*
+(Sep 30, 2026 - Critique 2, Studio B) Tj
+T*
+(Oct 21, 2026 - Critique 3, Studio B) Tj
+T*
+(Nov 4, 2026 - Critique 4, Studio B) Tj
+T*
+(Dec 2, 2026 - Critique 5, Studio B) Tj
+T*
+T*
+(Deliverables) Tj
+T*
+(Sep 4, 2026 - Sketch assignment due 6:00 PM \(5%\)) Tj
+T*
+(Sep 16, 2026 - Interview notes due 6:00 PM \(5%\)) Tj
 T*
 (Sep 23, 2026 - Research memo due 6:00 PM \(10%\)) Tj
 T*
-(Oct 13, 2026 - Interaction design project due 11:59 PM \(30%\)) Tj
+(Oct 7, 2026 - Prototype checkpoint due 6:00 PM \(10%\)) Tj
 T*
-(Nov 11, 2026 - Usability report due 11:59 PM \(20%\)) Tj
+(Oct 13, 2026 - Interaction design project due 11:59 PM \(25%\)) Tj
 T*
-(Dec 4, 2026 - Final portfolio due 11:59 PM, Studio B \(25%\)) Tj
+(Oct 28, 2026 - Protocol memo due 6:00 PM \(5%\)) Tj
 T*
-0 -6 Td
+(Nov 11, 2026 - Usability report due 11:59 PM \(15%\)) Tj
 T*
-(In-studio work is required. Critiques have no late path. Ask Prof.) Tj
+(Nov 18, 2026 - Revision memo due 6:00 PM \(5%\)) Tj
 T*
-(Davis before a project deadline if another course exam lands the same week.) Tj
+(Dec 4, 2026 - Final portfolio due 11:59 PM, Studio B \(20%\)) Tj
+T*
 ET
 endstream
 endobj
@@ -59,11 +73,11 @@ xref
 0000000015 00000 n 
 0000000064 00000 n 
 0000000121 00000 n 
-0000000268 00000 n 
-0000001400 00000 n 
-0000001470 00000 n 
-0000001545 00000 n 
+0000000257 00000 n 
+0000001667 00000 n 
+0000001737 00000 n 
+0000001812 00000 n 
 trailer << /Size 8 /Root 1 0 R /Info 7 0 R >>
 startxref
-1622
+1889
 %%EOF
