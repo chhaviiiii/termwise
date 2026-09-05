@@ -15,10 +15,11 @@ Open [http://localhost:43127](http://localhost:43127).
 
 1. **Add syllabus** or **Load demo semester**
 2. Review the extraction table
-3. **Confirm and keep** — nothing is written before this
-4. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
-5. Review the extension draft. Syllabot will not send it.
-6. **Export .ics** to import into Google Calendar, or open the draft in your mail client
+3. **Add to calendar** — nothing is written before this
+4. Confirmed items land on the color-coded Syllabot semester calendar, including weekly office hours
+5. **Add all to Google Calendar** downloads a reminder-ready `.ics` (Apple/Outlook open it), copies a subscribe link, and opens one Google “From URL” tab. Exams and projects can also be added one click at a time. Nothing is written without your click.
+6. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
+7. Review the extension draft. Syllabot will not send it.
 
 Paste text or upload a text-based PDF. Weekly capacity is remembered in the sidebar.
 
@@ -46,4 +47,4 @@ Setup steps are in `template/GROK_BOT.md` and in the app’s **Templates** view 
 - **weekly-brief** — dues by course, collisions in 2 weeks, one thing to start early
 - **draft-extension-request** — polite draft to the professor on the flexible item; never sent unless you say “send it”
 
-Google Calendar / Gmail two-way sync needs those plugins in Grok Bot. This app’s fallbacks are `.ics` download and `mailto:`.
+Google Calendar / Gmail two-way sync needs those plugins in Grok Bot. This app’s fallbacks are `.ics` download, an optional subscribe URL, and `mailto:`. Google OAuth is not used.

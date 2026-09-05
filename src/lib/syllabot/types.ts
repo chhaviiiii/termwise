@@ -22,6 +22,7 @@ export type AcademicEvent = {
   time: string;
   estimatedHours: number;
   sourceLine: string;
+  location?: string;
 };
 
 export type Collision = {
