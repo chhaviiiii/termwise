@@ -136,7 +136,7 @@ export default function Home() {
       </aside>
 
       <section className="pb-24 lg:pb-0 lg:pl-[244px]">
-        <header className="sticky top-0 z-20 flex h-[74px] items-center border-b border-[#dfe3dd] bg-[#fbfbf8]/95 px-5 backdrop-blur md:px-8 lg:px-10">
+        <header className="sticky top-0 z-40 flex h-[74px] items-center border-b border-[#dfe3dd] bg-[#fbfbf8]/95 px-5 backdrop-blur md:px-8 lg:px-10">
           <div className="grid size-9 place-items-center rounded-xl bg-[#f16d55] text-white lg:hidden"><Sparkles className="size-5" /></div>
           <div className="ml-3 lg:ml-0">
             <p className="font-serif text-xl font-bold">Good morning, Casey</p>
@@ -150,7 +150,7 @@ export default function Home() {
             <Button onClick={exportCalendar} variant="outline" className="ml-1 hidden h-9 rounded-lg border-[#d9dfda] bg-white px-3 text-xs font-bold md:flex">
               <Download className="size-3.5" /> Export calendar
             </Button>
-            <Button onClick={() => { setShowUpload(true); setUploaded(false); }} className="ml-1 h-9 rounded-lg bg-[#f16d55] px-3.5 text-xs font-bold text-white shadow-none hover:bg-[#dd5c45]">
+            <Button type="button" onClick={() => { setShowUpload(true); setUploaded(false); setUploadError(""); }} className="relative z-10 ml-1 h-9 rounded-lg bg-[#f16d55] px-3.5 text-xs font-bold text-white shadow-none hover:bg-[#dd5c45]">
               <UploadCloud className="size-4" /> <span className="hidden sm:inline">Add syllabus</span>
             </Button>
           </div>
