@@ -16,4 +16,4 @@ Termwise skill. Use when the student asks, or when check-collisions finds 3+ maj
 - Offer to share current progress.
 - Always label the message DRAFT · NOT SENT.
 
-Never send until the student writes "send it."
+Never send until the student writes "send it." Open the draft in Gmail or Outlook mail, whichever they chose.

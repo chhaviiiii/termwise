@@ -7,3 +7,5 @@ export * from "./calendar";
 export * from "./demo";
 export * from "./palette";
 export * from "./memory";
+export * from "./destinations";
+export * from "./event-meta";

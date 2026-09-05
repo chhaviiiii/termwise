@@ -1,4 +1,6 @@
 import { addDays, addMinutes, format, nextDay, type Day } from "date-fns";
+import type { CalendarDestination } from "./destinations";
+import { eventDescription } from "./event-meta";
 import type { AcademicEvent, Course } from "./types";
 
 const WEEKDAY: Record<string, Day> = {
@@ -83,7 +85,7 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
       `DTSTART;TZID=America/Los_Angeles:${compact(eventStart(event))}`,
       `DTEND;TZID=America/Los_Angeles:${compact(eventEnd(event))}`,
       `SUMMARY:${escapeText(`${event.courseCode} - ${event.title}`)}`,
-      `DESCRIPTION:${escapeText(`${event.kind} · ~${event.estimatedHours}h${course?.professor ? ` · ${course.professor}` : ""}${event.location ? ` · ${event.location}` : ""}`)}`,
+      `DESCRIPTION:${escapeText(eventDescription(event, course))}`,
       `CATEGORIES:${escapeText(`${event.courseCode},${event.kind}`)}`,
       `COLOR:${color}`,
       `X-APPLE-CALENDAR-COLOR:${color}`,
@@ -103,29 +105,38 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
   return lines.join("\r\n");
 }
 
-export function googleCalendarUrl(event: AcademicEvent) {
+export function googleCalendarUrl(event: AcademicEvent, course?: Course) {
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: `${event.courseCode} - ${event.title}`,
     dates: `${compact(eventStart(event))}/${compact(eventEnd(event))}`,
-    details: `${event.kind} · ~${event.estimatedHours}h · added by Termwise`,
+    details: eventDescription(event, course),
     ctz: "America/Los_Angeles",
   });
   if (event.location) params.set("location", event.location);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export function outlookCalendarUrl(event: AcademicEvent) {
+export function outlookCalendarUrl(event: AcademicEvent, course?: Course) {
   const params = new URLSearchParams({
     subject: `${event.courseCode} - ${event.title}`,
     startdt: eventStart(event).toISOString(),
     enddt: eventEnd(event).toISOString(),
-    body: `${event.kind} · ~${event.estimatedHours}h · added by Termwise`,
+    body: eventDescription(event, course),
     path: "/calendar/action/compose",
     rru: "addevent",
   });
   if (event.location) params.set("location", event.location);
   return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
+}
+
+export function calendarComposeUrl(event: AcademicEvent, destination: CalendarDestination, course?: Course) {
+  return destination === "outlook" ? outlookCalendarUrl(event, course) : googleCalendarUrl(event, course);
+}
+
+export function outlookSubscribeUrl(icsUrl: string, name = "Termwise semester") {
+  const params = new URLSearchParams({ url: icsUrl, name });
+  return `https://outlook.live.com/calendar/0/addfromweb?${params.toString()}`;
 }
 
 export function downloadIcs(filename: string, ics: string) {

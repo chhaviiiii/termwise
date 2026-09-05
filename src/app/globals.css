@@ -210,3 +210,7 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+.syllabot-shell[data-density="compact"] .sb-card {
+  border-radius: 10px;
+}

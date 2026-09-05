@@ -2,7 +2,7 @@
   "name": "Termwise",
   "title": "A tidy semester desk",
   "hashtag": "#GrokBotForStudents",
-  "plugins": ["Google Calendar", "Gmail"],
+  "plugins": ["Google Calendar", "Gmail", "Outlook Calendar", "Outlook mail"],
   "memory": [
     "courses, professors, and emails",
     "weekly study/work capacity in hours",

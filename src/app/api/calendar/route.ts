@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eventsToIcs } from "@/lib/syllabot";
+import { eventsToIcs, outlookSubscribeUrl } from "@/lib/syllabot";
 import { publishCalendarIcs } from "@/lib/syllabot/calendar-store";
 import type { AcademicEvent, Course } from "@/lib/syllabot";
 
@@ -24,6 +24,8 @@ export async function POST(request: Request) {
       webcalUrl,
       googleSubscribe: `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalUrl)}`,
       googleImport: "https://calendar.google.com/calendar/u/0/r/settings/addbyurl",
+      outlookSubscribe: outlookSubscribeUrl(icsUrl),
+      outlookImport: outlookSubscribeUrl(icsUrl),
     });
   } catch {
     return NextResponse.json({ error: "Invalid calendar payload." }, { status: 400 });

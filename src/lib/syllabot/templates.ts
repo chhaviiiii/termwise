@@ -12,15 +12,17 @@ Memory to keep:
 - My rough weekly capacity (hours I can realistically study/work per week)
 - Past extension requests and how professors responded
 
-Plugins: Google Calendar, Gmail.
+Plugins: Google Calendar and Gmail, or Outlook Calendar and Outlook mail.
 Approval boundary: preview every calendar write and every email. Never send without an explicit "send it."`;
 
-export const CONNECT_PLUGINS = `Connect the Google Calendar plugin and the Gmail plugin so you can read my syllabi (I'll paste or upload them) and keep the dates in one place.
+export const CONNECT_PLUGINS = `Connect either Google Calendar + Gmail, or Outlook Calendar + Outlook mail, so you can read my syllabi (I'll paste or upload them) and keep the dates in one place.
+
+I will reconnect my own Calendar/Gmail or Outlook. Do not expect to inherit someone else's logins.
 
 Until those plugins are connected, use Termwise fallbacks:
 - Show a confirmation table before creating events
-- Export an .ics file I can import to Google Calendar
-- Open a mailto: draft I can review in Gmail
+- Export an .ics file I can import to Google Calendar or Outlook Calendar
+- Open a mailto: draft I can review in Gmail or Outlook mail
 Never send or write without my confirmation.`;
 
 export const EXTRACT_SYLLABUS_SKILL = `Skill: extract-syllabus
@@ -28,8 +30,10 @@ When I give you a syllabus (PDF or pasted text):
 1. Extract every graded item: assignments, quizzes, midterms, finals,
    projects, with exact due dates and times.
 2. Extract weekly readings if listed.
-3. Extract office hours and professor contact info.
-4. Push each deadline to Google Calendar, color-coded by course name.
+3. Extract office hours, professor contact info, weight if listed,
+   location, and late-policy notes. Do not invent grades or dates.
+4. Push each deadline to my chosen calendar (Google Calendar or
+   Outlook Calendar), color-coded by course name.
 5. Show me a summary table before creating events, and wait for my
    confirmation.`;
 
@@ -49,8 +53,8 @@ Every Sunday at 8pm, send me a short note covering:
 - One thing I should start early
 
 Show the draft first unless I have auto-approved this routine.
-If Calendar/Gmail are disconnected, post the note in this chat and
-offer a mailto: draft.`;
+If Calendar/Gmail or Outlook are disconnected, post the note in this
+chat and offer a mailto: draft for Gmail or Outlook mail.`;
 
 export const DRAFT_EXTENSION_SKILL = `Skill: draft-extension-request
 If I ask, or if a collision is severe (3+ major items in 48 hours),
@@ -59,11 +63,13 @@ requesting a short extension or asking about flexibility. Always show
 me the draft. Never send without my explicit "send it."
 
 Prefer asking about the most flexible item (project/paper), not an exam.
-Keep the tone short, factual, and specific about the colliding dates.`;
+Keep the tone short, factual, and specific about the colliding dates.
+Open the draft in Gmail or Outlook mail, whichever I chose.`;
 
 export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwise"
 2. Bot actions → Edit Profile → paste template/01-identity.md
 3. In chat, paste template/02-connect-plugins.md
 4. Save each skill from .grok/skills/*/SKILL.md (or template/03-06)
 5. Ask: "Every Sunday at 8pm, run weekly-brief."
-6. Share the Bot as a template (strip any personal emails first)`;
+6. Share the Bot as a template (strip any personal emails first)
+Recipients reconnect their own Google Calendar / Gmail or Outlook Calendar / Outlook mail.`;

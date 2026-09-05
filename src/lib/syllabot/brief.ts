@@ -46,7 +46,7 @@ function pickStartEarly(items: AcademicEvent[]) {
 
 export function formatBriefEmail(memory: StudentMemory, brief: WeeklyBrief, collisions: Collision[]) {
   const dueLines = brief.items.length
-    ? brief.items.map((item) => `- ${item.courseCode}: ${item.title} (${item.date}${item.time ? `, ${item.time}` : ""}, ~${item.estimatedHours}h)`).join("\n")
+    ? brief.items.map((item) => `- ${item.courseCode}: ${item.title} (${item.date}${item.time ? `, ${item.time}` : ""}, ~${item.estimatedHours}h${item.weight ? `, ${item.weight}` : ""}${item.location ? `, ${item.location}` : ""})`).join("\n")
     : "- Nothing graded is due this week.";
   const collisionLines = collisions.length
     ? collisions.map((collision) => `- ${collision.severity === "severe" ? "SEVERE" : "Watch"}: ${collision.events.map((event) => event.courseCode).join(", ")} on ${collision.start} to ${collision.end}`).join("\n")

@@ -6,14 +6,17 @@ import {
   Clock3, Copy, Download, FileText, LayoutDashboard, Mail, MessageSquare,
   Send, Settings, Trash2, UploadCloud, X,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   DEMO_SYLLABI,
   DEFAULT_MEMORY,
+  DESTINATIONS,
+  DESTINATION_RECONNECT_NOTE,
   buildTermProgress,
   buildWeeklyBrief,
+  collisionForEvent,
+  displayKind,
   downloadIcs,
   draftExtensionRequest,
   eventBelongsToCourse,
@@ -22,14 +25,15 @@ import {
   extractFromText,
   findCollisions,
   formatBriefEmail,
-  googleCalendarUrl,
+  formatEventWhen,
   mailtoHref,
   mergeExtractions,
   mergeUniqueEvents,
-  priorityCalendarEvents,
   removeCourseFromMemory,
+  reviewMailHref,
   semesterBounds,
   type AcademicEvent,
+  type CalendarDestination,
   type Collision,
   type Course,
   type ExtensionDraft,
@@ -47,11 +51,13 @@ import {
 } from "@/lib/syllabot/templates";
 import { SemesterCalendar } from "@/components/semester-calendar";
 import { AppearancePanel } from "@/components/appearance-panel";
+import { AddCalendarPanel, type PublishInfo } from "@/components/add-calendar-panel";
 import {
   DEFAULT_APPEARANCE,
   getAppearance,
   removeCourseColor,
   subscribeAppearance,
+  writeAppearance,
   type Appearance,
 } from "@/lib/syllabot/appearance";
 
@@ -123,7 +129,7 @@ export function SyllabotWorkspace() {
   };
   const [pending, setPending] = useState<{ events: AcademicEvent[]; courses: StudentMemory["courses"] } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", role: "bot", text: "I'm Termwise. Drop a syllabus, paste text, or load the demo. I'll gather the dates and wait before anything goes on the calendar. I'll flag pileups, write the week brief, and draft emails. I never send them." },
+    { id: "welcome", role: "bot", text: "I'm Termwise. Drop a syllabus, paste text, or load the demo. I'll gather the dates and wait before anything goes on the calendar. When you're ready, send them to Google Calendar / Gmail or Outlook Calendar / Outlook mail. I'll flag pileups, write the week brief, and draft emails. I never send them." },
   ]);
   const [draft, setDraft] = useState<ExtensionDraft | null>(null);
   const [composer, setComposer] = useState("");
@@ -136,13 +142,20 @@ export function SyllabotWorkspace() {
   const [showAddCalendar, setShowAddCalendar] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [removing, setRemoving] = useState<Course | null>(null);
-  const [publishInfo, setPublishInfo] = useState<{ icsUrl: string; googleSubscribe: string; googleImport: string } | null>(null);
+  const [publishInfo, setPublishInfo] = useState<PublishInfo | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const collisions = useMemo(() => findCollisions(memory.events), [memory.events]);
   const brief = useMemo(() => buildWeeklyBrief(memory), [memory]);
   const weekEvents = brief.items;
   const severe = collisions.find((collision) => collision.severity === "severe") ?? collisions[0] ?? null;
+
+  const destination = appearance.destination;
+  const chosen = DESTINATIONS[destination];
+
+  function setDestination(value: CalendarDestination) {
+    writeAppearance((current) => ({ ...current, destination: value }));
+  }
 
   function notify(message: string) {
     setToast(message);
@@ -229,6 +242,7 @@ export function SyllabotWorkspace() {
           professor: course.professor || courses[index].professor,
           email: course.email || courses[index].email,
           officeHours: course.officeHours || courses[index].officeHours,
+          latePolicy: course.latePolicy || courses[index].latePolicy,
         };
       } else {
         courses.push({ ...course });
@@ -270,7 +284,7 @@ export function SyllabotWorkspace() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       setPublishInfo(data);
-      return data as { icsUrl: string; googleSubscribe: string; googleImport: string };
+      return data as PublishInfo;
     } catch {
       return null;
     }
@@ -282,7 +296,7 @@ export function SyllabotWorkspace() {
       return;
     }
     downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
-    notify("Calendar file downloaded. Apple Calendar and Outlook will open it.");
+    notify(`Calendar file downloaded. ${chosen.calendarLabel}, Apple Calendar, and Outlook will open it.`);
   }
 
   function copySubscribeLink(url?: string) {
@@ -292,10 +306,10 @@ export function SyllabotWorkspace() {
       return;
     }
     void navigator.clipboard.writeText(target);
-    notify("Subscribe link copied. Paste it into Google Calendar → From URL.");
+    notify(`Subscribe link copied. Paste it into ${chosen.calendarLabel}.`);
   }
 
-  async function addAllToGoogle() {
+  async function addAllToDestination() {
     if (!memory.events.length) {
       notify("Add a syllabus first.");
       return;
@@ -305,8 +319,11 @@ export function SyllabotWorkspace() {
     if (published?.icsUrl) {
       void navigator.clipboard.writeText(published.icsUrl);
     }
-    window.open(published?.googleImport ?? "https://calendar.google.com/calendar/u/0/r/settings/addbyurl", "_blank", "noopener,noreferrer");
-    notify("Downloaded the semester .ics and opened Google Calendar. Paste the copied subscribe link if asked.");
+    const openUrl = destination === "outlook"
+      ? published?.outlookSubscribe ?? published?.outlookImport ?? "https://outlook.live.com/calendar/0/addfromweb"
+      : published?.googleImport ?? "https://calendar.google.com/calendar/u/0/r/settings/addbyurl";
+    window.open(openUrl, "_blank", "noopener,noreferrer");
+    notify(`Downloaded the semester .ics and opened ${chosen.calendarLabel}. Paste the copied subscribe link if asked.`);
   }
 
   function runBrief() {
@@ -343,17 +360,17 @@ export function SyllabotWorkspace() {
     if (lower.includes("extension") || lower.includes("draft") || lower === "send it") {
       if (lower === "send it" && draft) {
         say("user", "send it");
-        window.location.href = mailtoHref(draft);
-        return say("bot", "Opened your mail client with the draft. I still have not sent anything myself.");
+        window.open(reviewMailHref(draft, destination), "_blank", "noopener,noreferrer");
+        return say("bot", `Opened ${chosen.mailLabel} with the draft. I still have not sent anything myself.`);
       }
       return runDraft();
     }
-    if (lower.includes("calendar") || lower.includes("add to google")) {
+    if (lower.includes("calendar") || lower.includes("add to google") || lower.includes("outlook")) {
       say("user", text);
       if (!memory.events.length) return say("bot", "Confirm a syllabus first, then I can put it on the calendar.");
       setView("calendar");
       setShowAddCalendar(true);
-      return say("bot", "Your semester is on the Termwise calendar. Use Add all to Google Calendar when you want exams and projects over there too.");
+      return say("bot", `Your semester is on the Termwise calendar. Choose Google Calendar / Gmail or Outlook Calendar / Outlook mail when you want the dates over there too. ${DESTINATION_RECONNECT_NOTE}`);
     }
     if (lower.includes("confirm") && pending) return confirmCalendar();
     if (/\b(due|exam|midterm|professor|office hours|assignment|project)\b/i.test(text) && findDateHint(text)) {
@@ -467,14 +484,25 @@ export function SyllabotWorkspace() {
           )}
           {view === "calendar" && (
             memory.events.length
-              ? <SemesterCalendar events={memory.events} courses={themedCourses} collisions={collisions} subscribeUrl={publishInfo?.icsUrl} onAddAll={() => setShowAddCalendar(true)} onCopySubscribe={() => copySubscribeLink()} />
-              : <Empty title="Calendar is empty" body="Confirm a syllabus and I will lay out the deadlines, exams, readings, and office hours by course color." />
+              ? (
+                <SemesterCalendar
+                  events={memory.events}
+                  courses={themedCourses}
+                  collisions={collisions}
+                  destination={destination}
+                  subscribeUrl={publishInfo?.icsUrl}
+                  onAddAll={() => setShowAddCalendar(true)}
+                  onCopySubscribe={() => copySubscribeLink()}
+                  onDestination={setDestination}
+                />
+              )
+              : <Empty title="Calendar is empty" body="Confirm a syllabus and I will lay out the deadlines, exams, readings, and office hours by course color. Then pick Google Calendar or Outlook Calendar — .ics, subscribe URL, or one-click compose. Nothing is written until you click." />
           )}
           {view === "chat" && (
             <ChatPanel messages={messages} composer={composer} setComposer={setComposer} onSend={() => handlePrompt(composer)} onDemo={loadDemo} onCalendar={() => handlePrompt("add to calendar")} />
           )}
           {view === "collisions" && (
-            <CollisionsPanel collisions={collisions} onDraft={(collision) => runDraft(collision)} onExport={exportCalendar} />
+            <CollisionsPanel memory={themedMemory} collisions={collisions} onDraft={(collision) => runDraft(collision)} onExport={exportCalendar} />
           )}
           {view === "briefs" && (
             <BriefPanel memory={themedMemory} brief={brief} collisions={collisions} onSchedule={() => notify("Sunday 8:00 PM note is set. I’ll have it ready here.")} />
@@ -484,54 +512,79 @@ export function SyllabotWorkspace() {
       </section>
 
       {showUpload && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setShowUpload(false)}>
-          <Card className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border-0 bg-white py-0 shadow-2xl">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--sb-ink)]/40 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setShowUpload(false)}>
+          <Card className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[var(--sb-line)] bg-[var(--sb-card)] py-0 text-[var(--sb-ink)] shadow-2xl">
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-2xl font-semibold tracking-tight">{pending ? "Does this look right?" : "Add your syllabi"}</h2>
-                  <p className="mt-1 text-sm text-[#76817e]">{pending ? "Nothing is on the calendar yet. Confirm when you're ready." : "Upload a PDF, paste text, or load the demo semester."}</p>
+                  <p className="mt-1 text-sm text-[var(--sb-muted)]">{pending ? "Nothing is on the calendar yet. Confirm when you're ready — then you can send dates to Google Calendar or Outlook Calendar." : "Upload a PDF, paste text, or load the demo semester."}</p>
                 </div>
-                <button onClick={() => setShowUpload(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
+                <button type="button" onClick={() => setShowUpload(false)} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>
               </div>
 
               {!pending ? (
                 <>
                   <input ref={fileRef} type="file" multiple accept=".pdf,.txt,application/pdf,text/plain" className="hidden" onChange={(event) => processFiles(Array.from(event.target.files ?? []))} />
-                  <button disabled={processing} onClick={() => fileRef.current?.click()} onDrop={(event) => { event.preventDefault(); processFiles(Array.from(event.dataTransfer.files)); }} onDragOver={(event) => event.preventDefault()} className="mt-6 grid w-full place-items-center rounded-2xl border-2 border-dashed border-[#b9cbc5] bg-[#f7fbf8] px-5 py-8 text-center hover:border-[#4e8b7d] disabled:opacity-60">
-                    <UploadCloud className="size-6 text-[#1c775f]" />
-                    <p className="mt-3 text-sm font-bold">Drop PDF or .txt syllabi</p>
-                    <p className="mt-1 text-xs text-[#8b9592]">or click to browse · up to 10 files</p>
+                  <button disabled={processing} onClick={() => fileRef.current?.click()} onDrop={(event) => { event.preventDefault(); processFiles(Array.from(event.dataTransfer.files)); }} onDragOver={(event) => event.preventDefault()} className="mt-5 grid w-full place-items-center rounded-2xl border-2 border-dashed border-[var(--sb-line)] bg-[var(--sb-bg)] px-5 py-8 text-center hover:border-[var(--sb-ink)]/40 disabled:opacity-60">
+                    <UploadCloud className="size-6 text-[var(--sb-muted)]" />
+                    <p className="mt-3 text-sm font-semibold">Drop PDF or .txt syllabi</p>
+                    <p className="mt-1 text-xs text-[var(--sb-muted)]">or click to browse · up to 10 files</p>
                   </button>
-                  <textarea value={paste} onChange={(event) => setPaste(event.target.value)} placeholder="Or paste a syllabus here…" className="mt-4 min-h-28 w-full rounded-xl border border-[#dfe3dd] bg-[#fbfbf8] p-3 text-sm outline-none" />
+                  <textarea value={paste} onChange={(event) => setPaste(event.target.value)} placeholder="Or paste a syllabus here…" className="mt-4 min-h-28 w-full rounded-xl border border-[var(--sb-line)] bg-[var(--sb-bg)] p-3 text-sm outline-none" />
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button type="button" onClick={() => ingestText(paste)} disabled={!paste.trim()} className="sb-btn disabled:opacity-40">Extract pasted text</button>
                     <button type="button" onClick={loadDemo} className="sb-btn-ghost">Load demo semester</button>
                   </div>
-                  {processing && <p className="mt-4 text-xs font-semibold text-[#5d6b67]">Reading your syllabi…</p>}
-                  {uploadError && <div className="mt-4 rounded-lg bg-[#fff0ec] px-3 py-2.5 text-xs font-semibold text-[#ad4938]">{uploadError}</div>}
+                  {processing && <p className="mt-4 text-xs font-semibold text-[var(--sb-muted)]">Reading your syllabi…</p>}
+                  {uploadError && <div className="mt-4 rounded-lg bg-[var(--sb-soft)] px-3 py-2.5 text-xs font-semibold text-[var(--sb-warn)]">{uploadError}</div>}
                 </>
               ) : (
                 <>
-                  <div className="mt-5 overflow-x-auto rounded-xl border border-[#e3e6e0]">
-                    <table className="w-full min-w-[520px] text-left text-xs">
-                      <thead className="bg-[#f6f7f3] text-[#6d7875]"><tr><th className="px-3 py-2">Course</th><th className="px-3 py-2">Item</th><th className="px-3 py-2">Kind</th><th className="px-3 py-2">Date</th><th className="px-3 py-2">Hours</th></tr></thead>
+                  <div className="mt-5 overflow-x-auto rounded-xl border border-[var(--sb-line)]">
+                    <table className="w-full min-w-[640px] text-left text-xs">
+                      <thead className="bg-[var(--sb-soft)] text-[var(--sb-muted)]">
+                        <tr>
+                          <th className="px-3 py-2 font-medium">Course</th>
+                          <th className="px-3 py-2 font-medium">Item</th>
+                          <th className="px-3 py-2 font-medium">Kind</th>
+                          <th className="px-3 py-2 font-medium">When</th>
+                          <th className="px-3 py-2 font-medium">Hours</th>
+                          <th className="px-3 py-2 font-medium">Weight</th>
+                          <th className="px-3 py-2 font-medium">Location</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         {pending.events.map((event) => (
-                          <tr key={event.id} className="border-t border-[#eef0eb]">
-                            <td className="px-3 py-2 font-bold">{event.courseCode}</td>
+                          <tr key={event.id} className="border-t border-[var(--sb-line)]">
+                            <td className="px-3 py-2 font-semibold">{event.courseCode}</td>
                             <td className="px-3 py-2">{event.title}</td>
-                            <td className="px-3 py-2 capitalize">{event.kind}</td>
+                            <td className="px-3 py-2">{displayKind(event)}</td>
                             <td className="px-3 py-2">{formatDate(event.date)} {event.time}</td>
                             <td className="px-3 py-2">{event.estimatedHours}h</td>
+                            <td className="px-3 py-2">{event.weight || "—"}</td>
+                            <td className="px-3 py-2">{event.location || "—"}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+                  {pending.courses.some((course) => course.latePolicy || (course.professor && course.professor !== "Professor")) && (
+                    <div className="mt-3 space-y-1 text-[11px] text-[var(--sb-muted)]">
+                      {pending.courses.map((course) => (
+                        <p key={course.id}>
+                          <span className="font-semibold text-[var(--sb-ink)]">{course.code}</span>
+                          {course.professor && course.professor !== "Professor" ? ` · ${course.professor}` : ""}
+                          {course.officeHours ? ` · OH ${course.officeHours}` : ""}
+                          {course.latePolicy ? ` · Late: ${course.latePolicy}` : ""}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                  <p className="mt-3 text-[11px] leading-5 text-[var(--sb-muted)]">Weights, locations, and late notes appear only when the syllabus listed them. After confirm, pick Google or Outlook — Termwise never writes the calendar for you.</p>
                   <div className="mt-5 flex justify-end gap-2">
-                    <button onClick={() => setPending(null)} className="sb-btn-ghost">Back</button>
-                    <button onClick={confirmCalendar} className="sb-btn"><CalendarDays className="size-4" /> Add to calendar</button>
+                    <button type="button" onClick={() => setPending(null)} className="sb-btn-ghost">Back</button>
+                    <button type="button" onClick={confirmCalendar} className="sb-btn"><CalendarDays className="size-4" /> Add to calendar</button>
                   </div>
                 </>
               )}
@@ -541,67 +594,40 @@ export function SyllabotWorkspace() {
       )}
 
       {showAddCalendar && memory.events.length > 0 && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setShowAddCalendar(false)}>
-          <Card className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border-0 bg-white py-0 shadow-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <Badge className="mb-2 bg-[#e8f7f1] text-[#16856b]">{memory.events.length} EVENTS ON TERMWISE</Badge>
-                  <h2 className="text-2xl font-semibold tracking-tight">Put them on your own calendar</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">They&apos;re on the Termwise calendar, color-coded by course. Google stays untouched until you click.</p>
-                </div>
-                <button onClick={() => setShowAddCalendar(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
-              </div>
-              <ol className="mt-5 space-y-2 text-sm">
-                <li className="rounded-xl bg-[#f6f7f3] px-4 py-3"><span className="mr-2 font-semibold">1.</span>Copy the subscribe link, or download the .ics (Apple Calendar and Outlook open it, with 1 to 3 day reminders).</li>
-                <li className="rounded-xl bg-[#f6f7f3] px-4 py-3"><span className="mr-2 font-semibold">2.</span>In Google Calendar: Settings, Add calendar, From URL. Paste the link. One tab only, so the browser does not block a stack.</li>
-                <li className="rounded-xl bg-[#f6f7f3] px-4 py-3"><span className="mr-2 font-semibold">3.</span>Exams and projects can also be added one click each, below.</li>
-              </ol>
-              {publishInfo?.icsUrl && (
-                <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#dfe3dd] px-4 py-3">
-                  <code className="min-w-0 flex-1 truncate text-xs text-[#3d4b47]">{publishInfo.icsUrl}</code>
-                  <button className="sb-btn-ghost h-8" onClick={() => copySubscribeLink()}><Copy className="size-3.5" /> Copy</button>
-                </div>
-              )}
-              {priorityCalendarEvents(memory.events, 6).length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <p className="text-[10px] font-bold tracking-[.14em] text-[#82908c]">EXAMS AND PROJECTS, ONE CLICK EACH</p>
-                  {priorityCalendarEvents(memory.events, 6).map((event) => (
-                    <div key={event.id} className="flex items-center gap-3 rounded-xl border border-[#e7e9e4] px-3 py-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold">{event.courseCode} · {event.title}</p>
-                        <p className="text-[11px] text-[#7c8683]">{formatDate(event.date)} {event.time}</p>
-                      </div>
-                      <button className="sb-btn-ghost h-8" onClick={() => window.open(googleCalendarUrl(event), "_blank", "noopener,noreferrer")}>Add to Google</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
-                <button onClick={() => { exportCalendar(); setShowAddCalendar(false); }} className="sb-btn-ghost"><Download className="size-4" /> Download .ics</button>
-                <button onClick={() => void addAllToGoogle()} className="sb-btn"><CalendarDays className="size-4" /> Add all to Google Calendar</button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AddCalendarPanel
+          events={memory.events}
+          courses={themedCourses}
+          destination={destination}
+          publishInfo={publishInfo}
+          onDestination={setDestination}
+          onClose={() => setShowAddCalendar(false)}
+          onDownload={() => { exportCalendar(); setShowAddCalendar(false); }}
+          onCopySubscribe={() => copySubscribeLink()}
+          onAddAll={() => void addAllToDestination()}
+        />
       )}
 
       {draft && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setDraft(null)}>
-          <Card className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border-0 bg-white py-0 shadow-2xl">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--sb-ink)]/40 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setDraft(null)}>
+          <Card className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[var(--sb-line)] bg-[var(--sb-card)] py-0 text-[var(--sb-ink)] shadow-2xl">
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div><p className="mb-1 text-xs uppercase tracking-[0.14em] text-[var(--sb-warn)]">Draft · not sent</p><h2 className="text-2xl font-semibold tracking-tight">Extension request</h2></div>
-                <button onClick={() => setDraft(null)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="mb-1 text-xs uppercase tracking-[0.14em] text-[var(--sb-warn)]">Draft · not sent</p>
+                  <h2 className="text-2xl font-semibold tracking-tight">Extension request</h2>
+                  <p className="mt-1 text-xs text-[var(--sb-muted)]">Opens in {chosen.mailLabel}. Termwise never sends unless you do.</p>
+                </div>
+                <button type="button" onClick={() => setDraft(null)} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>
               </div>
-              <div className="mt-5 space-y-3 rounded-xl border border-[#e3e6e0] bg-[#fbfbf8] p-4 text-sm">
-                <p><span className="mr-3 text-[#8a9491]">To</span> {draft.toName}{draft.toEmail ? ` <${draft.toEmail}>` : ""}</p>
-                <p className="border-t border-[#e6e8e3] pt-3"><span className="mr-3 text-[#8a9491]">Subject</span> {draft.subject}</p>
+              <div className="mt-5 space-y-3 rounded-xl border border-[var(--sb-line)] bg-[var(--sb-bg)] p-4 text-sm">
+                <p><span className="mr-3 text-[var(--sb-muted)]">To</span> {draft.toName}{draft.toEmail ? ` <${draft.toEmail}>` : ""}</p>
+                <p className="border-t border-[var(--sb-line)] pt-3"><span className="mr-3 text-[var(--sb-muted)]">Subject</span> {draft.subject}</p>
               </div>
-              <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[#e3e6e0] p-4 font-sans text-sm leading-7 text-[#46534f]">{draft.body}</pre>
-              <div className="mt-5 flex justify-end gap-2">
-                <button onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="sb-btn-ghost"><Copy className="size-4" /> Copy</button>
-                <button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Termwise did not send it."); }} className="sb-btn"><Send className="size-4" /> Review in email</button>
+              <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[var(--sb-line)] p-4 font-sans text-sm leading-7">{draft.body}</pre>
+              <div className="mt-5 flex flex-wrap justify-end gap-2">
+                <button type="button" onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="sb-btn-ghost"><Copy className="size-4" /> Copy</button>
+                <button type="button" onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Termwise did not send it."); }} className="sb-btn-ghost">mailto</button>
+                <button type="button" onClick={() => { window.open(reviewMailHref(draft, destination), "_blank", "noopener,noreferrer"); notify(`Opened ${chosen.mailLabel}. Termwise did not send it.`); }} className="sb-btn"><Send className="size-4" /> {chosen.reviewMailLabel}</button>
               </div>
             </CardContent>
           </Card>
@@ -617,20 +643,20 @@ export function SyllabotWorkspace() {
       </nav>
 
       {removing && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setRemoving(null)}>
-          <Card className="w-full max-w-md rounded-2xl border-0 bg-white py-0 shadow-2xl">
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-[var(--sb-ink)]/40 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setRemoving(null)}>
+          <Card className="w-full max-w-md rounded-2xl border border-[var(--sb-line)] bg-[var(--sb-card)] py-0 text-[var(--sb-ink)] shadow-2xl">
             <CardContent className="p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="mb-1 text-xs uppercase tracking-[0.14em] text-[var(--sb-warn)]">Remove class</p>
                   <h2 className="text-2xl font-semibold tracking-tight">Take {removing.code} off the desk?</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--sb-muted)]">
                     {memory.courses.length === 1
                       ? `This clears ${removing.code}, its deadlines, office hours, and color. The desk will be empty again.`
                       : `This clears ${removing.code}, its deadlines, office hours, and color. Your other classes stay.`}
                   </p>
                 </div>
-                <button type="button" onClick={() => setRemoving(null)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]" aria-label="Close"><X className="size-4" /></button>
+                <button type="button" onClick={() => setRemoving(null)} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>
               </div>
               <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button type="button" onClick={() => setRemoving(null)} className="sb-btn-ghost">Keep it</button>
@@ -696,12 +722,12 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
           </div>
         </div>
         <p className="mt-5 max-w-xl text-[15px] leading-7 text-[var(--sb-ink)]">
-          Extract syllabi, confirm the dates, catch 48-hour pileups, read the week brief, and draft an extension if you need one. Termwise never sends.
+          Extract syllabi, confirm the dates, catch 48-hour pileups, read the week brief, and draft an extension if you need one. Send dates to Google Calendar / Gmail or Outlook Calendar / Outlook mail. Termwise never sends.
         </p>
         <ol className="mt-6 grid gap-3 sm:grid-cols-2">
           {[
             ["1", "Extract", "PDF or paste. I wait for you."],
-            ["2", "Calendar", "Color-coded term, plus office hours."],
+            ["2", "Calendar", "Google or Outlook, plus .ics."],
             ["3", "This week", "Load, pileups, Sunday brief."],
             ["4", "Draft", "An extension email. Never sent."],
           ].map(([step, title, body]) => (
@@ -769,17 +795,24 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
           <span className="text-xs text-[var(--sb-muted)]">{brief.totalHours <= brief.capacityHours ? "On track" : "Over capacity"}</span>
         </div>
         <div className="divide-y divide-[var(--sb-line)]">
-          {weekEvents.length ? weekEvents.map((item) => (
-            <div key={item.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-              <button onClick={() => setCompleted((current) => current.includes(item.id) ? current.filter((id) => id !== item.id) : [...current, item.id])} className={`grid size-4 place-items-center rounded-sm border border-[var(--sb-ink)] ${completed.includes(item.id) ? "bg-[var(--sb-ink)] text-[var(--sb-bg)]" : "text-transparent"}`} aria-label={`Complete ${item.title}`}><Check className="size-3" /></button>
+          {weekEvents.length ? weekEvents.map((item) => {
+            const pileup = collisionForEvent(item, collisions);
+            return (
+            <div key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <button type="button" onClick={() => setCompleted((current) => current.includes(item.id) ? current.filter((id) => id !== item.id) : [...current, item.id])} className={`mt-0.5 grid size-4 place-items-center rounded-sm border border-[var(--sb-ink)] ${completed.includes(item.id) ? "bg-[var(--sb-ink)] text-[var(--sb-bg)]" : "text-transparent"}`} aria-label={`Complete ${item.title}`}><Check className="size-3" /></button>
               <div className={`min-w-0 flex-1 ${completed.includes(item.id) ? "opacity-40 line-through" : ""}`}>
-                <p className="text-[11px] text-[var(--sb-muted)]">{item.courseCode}</p>
+                <p className="text-[11px] text-[var(--sb-muted)]">
+                  {item.courseCode} · {displayKind(item)}
+                  {item.weight ? ` · ${item.weight}` : ""}
+                  {pileup ? " · pileup" : ""}
+                </p>
                 <p className="truncate text-sm font-medium">{item.title}</p>
+                <p className="mt-0.5 text-[11px] text-[var(--sb-muted)]">{formatEventWhen(item)}{item.location ? ` · ${item.location}` : ""}</p>
               </div>
-              <span className="hidden text-xs text-[var(--sb-muted)] sm:block">{formatDate(item.date)}</span>
-              <span className="flex items-center gap-1 text-xs"><Clock3 className="size-3.5 text-[var(--sb-muted)]" />{item.estimatedHours}h</span>
+              <span className="flex items-center gap-1 pt-0.5 text-xs"><Clock3 className="size-3.5 text-[var(--sb-muted)]" />{item.estimatedHours}h</span>
             </div>
-          )) : <p className="text-sm text-[var(--sb-muted)]">Nothing graded this week.</p>}
+            );
+          }) : <p className="text-sm text-[var(--sb-muted)]">Nothing graded this week.</p>}
         </div>
       </div>
     ),
@@ -804,7 +837,7 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
                 <span className="size-2 shrink-0 rounded-full" style={{ background: course.color }} />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{course.code}</p>
-                  <p className="truncate text-xs text-[var(--sb-muted)]">{course.professor}</p>
+                  <p className="truncate text-xs text-[var(--sb-muted)]">{course.professor}{course.officeHours ? ` · ${course.officeHours}` : ""}</p>
                   <p className="mt-0.5 text-xs text-[var(--sb-muted)] sm:hidden">{upcoming} items · {hit ? "In a collision" : "Clear"}</p>
                 </div>
                 <div className="hidden text-right text-xs sm:block">
@@ -879,28 +912,40 @@ function ChatPanel({ messages, composer, setComposer, onSend, onDemo, onCalendar
   );
 }
 
-function CollisionsPanel({ collisions, onDraft, onExport }: { collisions: Collision[]; onDraft: (collision: Collision) => void; onExport: () => void }) {
+function CollisionsPanel({ memory, collisions, onDraft, onExport }: { memory: StudentMemory; collisions: Collision[]; onDraft: (collision: Collision) => void; onExport: () => void }) {
   if (!collisions.length) {
-    return <Empty title="No collisions yet" body="Confirm a syllabus and I will look for 48-hour pileups." />;
+    return <Empty title="No collisions yet" body="Confirm a syllabus and I will look for 48-hour pileups. Export still goes to the calendar destination you picked — Google or Outlook — as an .ics or subscribe link." />;
   }
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {collisions.map((collision) => (
         <div key={collision.id} className="sb-card p-5">
-          <p className="text-xs uppercase tracking-[0.14em] text-[var(--sb-muted)]">{collision.severity}</p>
-          <h2 className="mt-2 text-xl font-semibold">{collision.events.length} majors in {collision.hoursSpan} hours</h2>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--sb-muted)]">{collision.severity} pileup</p>
+          <h2 className="mt-1.5 text-xl font-semibold">{collision.events.length} majors in {collision.hoursSpan} hours</h2>
           <p className="mt-1 text-sm text-[var(--sb-muted)]">{formatDate(collision.start)} to {formatDate(collision.end)} · {collision.totalHours}h</p>
-          <div className="mt-4 space-y-2">
-            {collision.events.map((event) => (
-              <div key={event.id} className="border-t border-[var(--sb-line)] py-3 first:border-t-0 first:pt-0">
-                <p className="text-xs text-[var(--sb-muted)]">{event.courseCode} · {formatDate(event.date)} {event.time}</p>
-                <p className="mt-0.5 text-sm font-medium">{event.title}</p>
-              </div>
-            ))}
+          <div className="mt-4 space-y-1">
+            {collision.events.map((event) => {
+              const course = memory.courses.find((item) => item.id === event.courseId || item.code === event.courseCode);
+              return (
+                <div key={event.id} className="border-t border-[var(--sb-line)] py-3 first:border-t-0 first:pt-0">
+                  <p className="text-[11px] text-[var(--sb-muted)]">
+                    {event.courseCode} · {displayKind(event)}
+                    {event.weight ? ` · ${event.weight}` : ""}
+                    {event.estimatedHours ? ` · ~${event.estimatedHours}h` : ""}
+                  </p>
+                  <p className="mt-0.5 text-sm font-medium">{event.title}</p>
+                  <p className="mt-0.5 text-[11px] text-[var(--sb-muted)]">
+                    {formatEventWhen(event)}
+                    {event.location ? ` · ${event.location}` : ""}
+                    {course?.professor && course.professor !== "Professor" ? ` · ${course.professor}` : ""}
+                  </p>
+                </div>
+              );
+            })}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button onClick={onExport} className="sb-btn-ghost"><Download className="size-4" /> Export week</button>
-            {collision.severity === "severe" && <button onClick={() => onDraft(collision)} className="sb-btn"><Mail className="size-4" /> Draft email</button>}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={onExport} className="sb-btn-ghost"><Download className="size-4" /> Export .ics</button>
+            {collision.severity === "severe" && <button type="button" onClick={() => onDraft(collision)} className="sb-btn"><Mail className="size-4" /> Draft email</button>}
           </div>
         </div>
       ))}
@@ -933,7 +978,9 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
     <div className="space-y-4">
       <div className="sb-card p-6">
         <h1 className="text-2xl font-semibold">Termwise Bot template</h1>
-        <p className="mt-2 text-sm text-[var(--sb-muted)]">In Grok: New, Create new agent, name it Termwise. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.</p>
+        <p className="mt-2 text-sm leading-6 text-[var(--sb-muted)]">
+          In Grok: New, Create new agent, name it Termwise. Connect Google Calendar / Gmail <em>or</em> Outlook Calendar / Outlook mail. Recipients reconnect their own accounts — they do not inherit logins. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.
+        </p>
         <pre className="mt-4 whitespace-pre-wrap bg-[var(--sb-soft)] p-4 text-xs leading-6">{GROK_SETUP_STEPS}</pre>
       </div>
       {blocks.map((block) => (
@@ -958,9 +1005,9 @@ function BrandMark({ size = 32 }: { size?: number }) {
 
 function Empty({ title, body }: { title: string; body: string }) {
   return (
-    <div className="py-16">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <p className="mt-2 max-w-md text-sm text-[var(--sb-muted)]">{body}</p>
+    <div className="sb-card max-w-xl p-6">
+      <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--sb-muted)]">{body}</p>
     </div>
   );
 }

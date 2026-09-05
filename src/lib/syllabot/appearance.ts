@@ -1,3 +1,5 @@
+import { isDestination, type CalendarDestination } from "./destinations";
+
 export type ThemeId = "paper" | "concrete" | "olive" | "night";
 export type WidgetId = "term" | "collision" | "due" | "brief" | "courses";
 
@@ -7,6 +9,7 @@ export type Appearance = {
   theme: ThemeId;
   accent: string;
   density: "comfortable" | "compact";
+  destination: CalendarDestination;
   widgets: WidgetPref[];
   courseColors: Record<string, string>;
 };
@@ -32,6 +35,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   theme: "paper",
   accent: "#b42318",
   density: "comfortable",
+  destination: "google",
   widgets: DEFAULT_WIDGETS,
   courseColors: {},
 };
@@ -49,6 +53,7 @@ function normalize(value: Partial<Appearance> | null): Appearance {
   return {
     ...DEFAULT_APPEARANCE,
     ...value,
+    destination: isDestination(value?.destination) ? value.destination : DEFAULT_APPEARANCE.destination,
     widgets,
     courseColors: value?.courseColors ?? {},
   };

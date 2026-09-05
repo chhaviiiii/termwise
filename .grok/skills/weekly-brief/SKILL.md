@@ -17,4 +17,4 @@ Termwise routine. Schedule: every Sunday at 8:00 PM in the student's local timez
 
 ## Safety
 
-Show the draft first. Do not send unless the student said "send it" or auto-approved this routine.
+Show the draft first. Do not send unless the student said "send it" or auto-approved this routine. If Calendar/Gmail or Outlook are disconnected, post the note in chat and offer a mailto: draft.

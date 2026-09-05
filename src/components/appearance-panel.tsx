@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, X } from "lucide-react";
+import { DestinationChoice } from "@/components/destination-choice";
 import {
   ACCENTS,
   THEMES,
@@ -9,7 +10,7 @@ import {
   type Appearance,
   type WidgetId,
 } from "@/lib/syllabot/appearance";
-import type { Course } from "@/lib/syllabot";
+import { DESTINATION_RECONNECT_NOTE, type Course } from "@/lib/syllabot";
 
 export function AppearancePanel({
   appearance,
@@ -87,6 +88,18 @@ export function AppearancePanel({
                 <input type="color" value={appearance.accent} className="sr-only" onChange={(event) => writeAppearance((current) => ({ ...current, accent: event.target.value }))} />
               </label>
             </div>
+          </section>
+
+          <section>
+            <h3 className="text-sm font-semibold">Calendar &amp; mail</h3>
+            <p className="mt-1 text-xs text-[var(--sb-muted)]">Choose Google or Outlook. Termwise still uses .ics, subscribe URLs, and drafts — no OAuth, nothing sent until you click.</p>
+            <div className="mt-3">
+              <DestinationChoice
+                value={appearance.destination}
+                onChange={(destination) => writeAppearance((current) => ({ ...current, destination }))}
+              />
+            </div>
+            <p className="mt-2 text-[11px] leading-5 text-[var(--sb-muted)]">{DESTINATION_RECONNECT_NOTE}</p>
           </section>
 
           <section>

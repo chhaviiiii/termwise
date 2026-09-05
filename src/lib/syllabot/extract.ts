@@ -47,11 +47,43 @@ function estimateHours(kind: EventKind, line: string) {
   return 1;
 }
 
-function cleanTitle(line: string, dateText: string) {
-  return line
+function extractWeight(line: string) {
+  const match = line.match(/\((\d+(?:\.\d+)?)\s*%\)|\bworth\s+(\d+(?:\.\d+)?)\s*%|\b(\d+(?:\.\d+)?)\s*%\s+of\s+(?:the\s+)?(?:grade|course)/i);
+  const value = match?.[1] ?? match?.[2] ?? match?.[3];
+  return value ? `${value}%` : undefined;
+}
+
+function extractLocation(line: string) {
+  const match = line.match(/\b((?:Room|Rm\.?|Hall|Gates|Studio|Bldg\.?|Building|Lab)\s+[A-Z0-9][A-Za-z0-9.\-]*)\b/i);
+  return match?.[1]?.replace(/[.,;]+$/, "").trim() || undefined;
+}
+
+function extractLateNote(line: string) {
+  if (!/\blate\b/i.test(line)) return undefined;
+  if (/office hours?|late policy/i.test(line)) return undefined;
+  return line.slice(0, 160);
+}
+
+function extractLatePolicy(text: string) {
+  for (const raw of text.split(/\r?\n/)) {
+    const line = cleanLine(raw);
+    if (!line || line.length < 8) continue;
+    if (!/late\s+(work|policy|assignment|submission|penalty)|no late work/i.test(line)) continue;
+    return line.replace(/^late(?:\s+work)?\s*policy\s*[:\-–]\s*/i, "").slice(0, 180);
+  }
+  return undefined;
+}
+
+function cleanTitle(line: string, dateText: string, extras: { location?: string; weight?: string } = {}) {
+  let title = line
     .replace(dateText, "")
     .replace(TIME, "")
     .replace(/\bdue\b/gi, "")
+    .replace(/\((\d+(?:\.\d+)?)\s*%\)/g, "")
+    .replace(/\bworth\s+\d+(?:\.\d+)?\s*%/gi, "")
+    .replace(/\b\d+(?:\.\d+)?\s*%\s+of\s+(?:the\s+)?(?:grade|course)/gi, "");
+  if (extras.location) title = title.replace(extras.location, "");
+  return title
     .replace(/^[–—,:.\-\s]+/, "")
     .replace(/[–—,:.\-\s]+$/, "")
     .replace(/\s+/g, " ")
@@ -94,6 +126,7 @@ function extractCourse(text: string, fileName: string, colorIndex: number): Cour
     lines.find((line) => /office hours?/i.test(line))?.replace(/office hours?\s*[:\-–]?\s*/i, "") ??
     "";
   const palette = paletteForIndex(colorIndex);
+  const latePolicy = extractLatePolicy(text);
 
   return {
     id: slug(code),
@@ -102,6 +135,7 @@ function extractCourse(text: string, fileName: string, colorIndex: number): Cour
     professor,
     email,
     officeHours,
+    latePolicy,
     color: palette.color,
     bg: palette.bg,
   };
@@ -127,7 +161,10 @@ export function extractFromText(text: string, fileName = "syllabus.txt", colorIn
     }
 
     const kind = classify(line);
-    const title = cleanTitle(line, dateText) || `${course.code} ${kind}`;
+    const location = extractLocation(line);
+    const weight = extractWeight(line);
+    const notes = extractLateNote(line);
+    const title = cleanTitle(line, dateText, { location, weight }) || `${course.code} ${kind}`;
     const key = `${course.id}:${parsed.toISOString().slice(0, 10)}:${title.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -142,6 +179,9 @@ export function extractFromText(text: string, fileName = "syllabus.txt", colorIn
       time: line.match(TIME)?.[0]?.toUpperCase().replace(/\s+/g, " ") ?? (kind === "office-hour" ? "" : "11:59 PM"),
       estimatedHours: estimateHours(kind, line),
       sourceLine: line,
+      location,
+      weight,
+      notes,
     });
   }
 
@@ -162,6 +202,7 @@ export function mergeExtractions(results: ExtractionResult[], existingCourses: C
       professor: result.course.professor || match.professor,
       email: result.course.email || match.email,
       officeHours: result.course.officeHours || match.officeHours,
+      latePolicy: result.course.latePolicy || match.latePolicy,
     });
     events.push(...result.events.map((event) => ({ ...event, courseId: course.id, courseCode: course.code })));
   });

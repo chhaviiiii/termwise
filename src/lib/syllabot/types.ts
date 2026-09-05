@@ -8,6 +8,7 @@ export type Course = {
   professor: string;
   email: string;
   officeHours: string;
+  latePolicy?: string;
   color: string;
   bg: string;
 };
@@ -23,6 +24,8 @@ export type AcademicEvent = {
   estimatedHours: number;
   sourceLine: string;
   location?: string;
+  weight?: string;
+  notes?: string;
 };
 
 export type Collision = {

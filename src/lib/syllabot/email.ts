@@ -44,3 +44,27 @@ export function mailtoHref(draft: ExtensionDraft) {
   });
   return `mailto:${draft.toEmail}?${params.toString()}`;
 }
+
+export function gmailComposeHref(draft: ExtensionDraft) {
+  const params = new URLSearchParams({
+    view: "cm",
+    fs: "1",
+    to: draft.toEmail,
+    su: draft.subject,
+    body: draft.body,
+  });
+  return `https://mail.google.com/mail/?${params.toString()}`;
+}
+
+export function outlookMailHref(draft: ExtensionDraft) {
+  const params = new URLSearchParams({
+    to: draft.toEmail,
+    subject: draft.subject,
+    body: draft.body,
+  });
+  return `https://outlook.live.com/mail/0/deeplink/compose?${params.toString()}`;
+}
+
+export function reviewMailHref(draft: ExtensionDraft, destination: "google" | "outlook") {
+  return destination === "outlook" ? outlookMailHref(draft) : gmailComposeHref(draft);
+}

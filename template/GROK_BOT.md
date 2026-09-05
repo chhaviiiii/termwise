@@ -11,6 +11,6 @@ Termwise is both a working web app in this repo and a Grok Bot. Create the Bot, 
 5. Ask: `Every Sunday at 8pm, run weekly-brief.`
 6. When it works, **Share as template**. Strip any personal emails first.
 
-Recipients reconnect their own Calendar and Gmail. They do not get your logins.
+Recipients reconnect their own Google Calendar / Gmail or Outlook Calendar / Outlook mail. They do not get your logins.
 
-The working web app in this repo runs the same skills without Grok plugins: paste or upload a syllabus, confirm the table, then export `.ics` / open a `mailto:` draft.
+The working web app in this repo runs the same skills without Grok plugins: paste or upload a syllabus, confirm the table, then export `.ics` / open a `mailto:` draft for Google or Outlook.
