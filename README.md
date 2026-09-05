@@ -1,8 +1,10 @@
-# Syllabus Sync
+# Syllabot
 
-A student copilot that turns syllabus PDFs into a semester plan. It extracts and classifies dated items from real PDFs, highlights deadline collisions, estimates weekly workload, previews Sunday planning briefs, exports an `.ics` calendar, and drafts extension-request emails for review.
+A working academic assistant for the Student Build Challenge. Drop in syllabi, confirm a calendar preview, catch 48-hour deadline pileups, and draft — never send — extension emails.
 
-## Run locally
+The same identity, skills, and Sunday 8pm routine live in the Grok Bot template so others can install it with their own Calendar and Gmail.
+
+## Run the working app
 
 ```bash
 npm install
@@ -11,48 +13,37 @@ npm run dev -- --port 43127
 
 Open [http://localhost:43127](http://localhost:43127).
 
-## What works
+1. **Add syllabus** or **Load demo semester**
+2. Review the extraction table
+3. **Confirm and keep** — nothing is written before this
+4. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
+5. Review the extension draft. Syllabot will not send it.
+6. **Export .ics** to import into Google Calendar, or open the draft in your mail client
 
-- Upload up to 10 text-based PDF syllabi (15 MB each)
-- Server-side extraction of dates, exams, readings, assignments, and office hours
-- Interactive collision map and extension-request draft
-- Weekly workload brief, task completion, and calendar export
-- Responsive desktop and mobile dashboard
+Paste text or upload a text-based PDF. Weekly capacity is remembered in the sidebar.
 
-Google Calendar and Gmail buttons use credential-free fallbacks (`.ics` download and `mailto:`). Production two-way sync requires Google OAuth credentials.
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Grok Bot template
 
-## Getting Started
+Shareable files (no secrets, no student data):
 
-First, run the development server:
+| File | What to paste |
+| --- | --- |
+| `template/01-identity.md` | Bot profile |
+| `template/02-connect-plugins.md` | First chat: Calendar + Gmail |
+| `template/03-extract-syllabus.md` | Skill |
+| `template/04-check-collisions.md` | Skill |
+| `template/05-weekly-brief.md` | Sunday 8pm routine |
+| `template/06-draft-extension-request.md` | Skill |
+| `template/syllabot.template.json` | Portable bundle |
+| `.grok/skills/*/SKILL.md` | Installable skills |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Setup steps are in `template/GROK_BOT.md` and in the app’s **Templates** view (copy buttons included).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Skills
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **extract-syllabus** — graded items, readings, office hours, professor email; confirmation table first
+- **check-collisions** — 2 majors in 48 hours = watch; 3+ = severe
+- **weekly-brief** — dues by course, collisions in 2 weeks, one thing to start early
+- **draft-extension-request** — polite draft to the professor on the flexible item; never sent unless you say “send it”
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Google Calendar / Gmail two-way sync needs those plugins in Grok Bot. This app’s fallbacks are `.ics` download and `mailto:`.

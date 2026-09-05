@@ -1,0 +1,11 @@
+CS 301 — Algorithms
+Professor: Dr. Chen (chen@university.edu)
+Office hours: Tuesday 4:30-5:30 PM, Gates 214
+
+Graded schedule
+Sep 10, 2026 — Problem Set 1 due 11:59 PM
+Sep 24, 2026 — Problem Set 2 due 11:59 PM
+Oct 8, 2026 — Problem Set 3 due 11:59 PM
+Oct 12, 2026 — Midterm exam 9:00 AM
+Nov 5, 2026 — Problem Set 4 due 11:59 PM
+Dec 10, 2026 — Final exam 9:00 AM

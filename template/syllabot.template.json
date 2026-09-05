@@ -1,0 +1,24 @@
+{
+  "name": "Syllabot",
+  "title": "Personal academic assistant",
+  "hashtag": "#GrokBotForStudents",
+  "plugins": ["Google Calendar", "Gmail"],
+  "memory": [
+    "courses, professors, and emails",
+    "weekly study/work capacity in hours",
+    "past extension requests and professor responses"
+  ],
+  "approvalBoundary": "Never send email or write calendar events without a preview, unless the student said auto-approve.",
+  "skills": [
+    "extract-syllabus",
+    "check-collisions",
+    "draft-extension-request"
+  ],
+  "routines": [
+    {
+      "name": "weekly-brief",
+      "schedule": "Every Sunday at 8:00 PM",
+      "output": "Week-ahead email: dues by course, collisions in 2 weeks, one thing to start early"
+    }
+  ]
+}
