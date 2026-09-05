@@ -7,7 +7,7 @@ Termwise is both a working web app in this repo and a Grok Bot. Create the Bot, 
 1. In Grok: **New → Create new agent → name it "Termwise"**
 2. **Bot actions → Edit Profile**: name Termwise, title **A tidy semester desk**, and this listing description (also in `termwise.template.json`):
 
-   A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use .ics/mailto fallbacks. Never writes calendar or mail without a preview.
+   A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.
 
    Then paste `01-identity.md`.
 3. In the new chat, paste `02-connect-plugins.md`

@@ -1,7 +1,7 @@
 export const TERMWISE_LISTING_TITLE = "A tidy semester desk";
 
 export const TERMWISE_LISTING_DESCRIPTION =
-  "A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use .ics/mailto fallbacks. Never writes calendar or mail without a preview.";
+  "A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.";
 
 export const TERMWISE_LISTING = `Name: Termwise
 Title: ${TERMWISE_LISTING_TITLE}

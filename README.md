@@ -29,7 +29,7 @@ The mark lives at `public/termwise-mark.svg` (sidebar and mobile header) and `sr
 
 Termwise is also a Grok Bot. In Grok: New → Create new agent → name it Termwise, then paste identity, skills, and the Sunday routine. Full steps are in `template/GROK_BOT.md`.
 
-Listing title and description (Edit Profile → the “Add to Grok Bot” page): **A tidy semester desk.** A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use .ics/mailto fallbacks. Never writes calendar or mail without a preview.
+Listing title and description (Edit Profile → the “Add to Grok Bot” page): **A tidy semester desk.** A student semester desk: extract syllabus deadlines, catch 48-hour pileups, draft extension emails, and send a Sunday week-ahead brief. Connect Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — you pick, you do not inherit logins — or use Fallback: .ics download / mailto draft. Never writes calendar or mail without a preview.
 
 Shareable files (no secrets, no student data):
 
