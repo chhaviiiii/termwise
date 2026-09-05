@@ -1,5 +1,5 @@
 export type ThemeId = "paper" | "concrete" | "olive" | "night";
-export type WidgetId = "collision" | "due" | "brief" | "courses";
+export type WidgetId = "term" | "collision" | "due" | "brief" | "courses";
 
 export type WidgetPref = { id: WidgetId; label: string; visible: boolean };
 
@@ -21,6 +21,7 @@ export const THEMES: { id: ThemeId; label: string; note: string }[] = [
 export const ACCENTS = ["#b42318", "#171614", "#1f4d3a", "#1d3a6e", "#8a5a12", "#6b2d5b"];
 
 export const DEFAULT_WIDGETS: WidgetPref[] = [
+  { id: "term", label: "Term progress", visible: true },
   { id: "collision", label: "Pileups", visible: true },
   { id: "due", label: "Due this week", visible: true },
   { id: "brief", label: "Sunday brief", visible: true },
@@ -35,7 +36,8 @@ export const DEFAULT_APPEARANCE: Appearance = {
   courseColors: {},
 };
 
-const KEY = "syllabot-appearance-v1";
+const KEY = "termwise-appearance-v1";
+const LEGACY_KEYS = ["syllabot-appearance-v1"];
 let cache: Appearance = DEFAULT_APPEARANCE;
 const listeners = new Set<() => void>();
 
@@ -52,9 +54,23 @@ function normalize(value: Partial<Appearance> | null): Appearance {
   };
 }
 
+function readStoredAppearance() {
+  if (typeof window === "undefined") return null;
+  const current = window.localStorage.getItem(KEY);
+  if (current) return current;
+  for (const key of LEGACY_KEYS) {
+    const legacy = window.localStorage.getItem(key);
+    if (legacy) {
+      window.localStorage.setItem(KEY, legacy);
+      return legacy;
+    }
+  }
+  return null;
+}
+
 if (typeof window !== "undefined") {
   try {
-    const saved = window.localStorage.getItem(KEY);
+    const saved = readStoredAppearance();
     if (saved) cache = normalize(JSON.parse(saved));
   } catch {
     cache = DEFAULT_APPEARANCE;

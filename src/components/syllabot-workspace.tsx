@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   DEMO_SYLLABI,
   DEFAULT_MEMORY,
+  buildTermProgress,
   buildWeeklyBrief,
   downloadIcs,
   draftExtensionRequest,
@@ -30,6 +31,7 @@ import {
   type Collision,
   type ExtensionDraft,
   type StudentMemory,
+  type TermProgress,
 } from "@/lib/syllabot";
 import {
   CHECK_COLLISIONS_SKILL,
@@ -37,7 +39,7 @@ import {
   DRAFT_EXTENSION_SKILL,
   EXTRACT_SYLLABUS_SKILL,
   GROK_SETUP_STEPS,
-  DEADLINER_IDENTITY,
+  TERMWISE_IDENTITY,
   WEEKLY_BRIEF_ROUTINE,
 } from "@/lib/syllabot/templates";
 import { SemesterCalendar } from "@/components/semester-calendar";
@@ -52,7 +54,8 @@ import {
 type View = "overview" | "chat" | "calendar" | "collisions" | "briefs" | "templates";
 type ChatMessage = { id: string; role: "bot" | "user"; text: string };
 
-const STORAGE_KEY = "syllabot-memory-v1";
+const STORAGE_KEY = "termwise-memory-v1";
+const LEGACY_STORAGE_KEYS = ["syllabot-memory-v1"];
 const emptyMemory = (): StudentMemory => ({
   studentName: DEFAULT_MEMORY.studentName,
   weeklyCapacityHours: DEFAULT_MEMORY.weeklyCapacityHours,
@@ -64,8 +67,22 @@ const emptyMemory = (): StudentMemory => ({
 let memoryCache = emptyMemory();
 const memoryListeners = new Set<() => void>();
 
+function readStoredMemory() {
+  if (typeof window === "undefined") return null;
+  const current = window.localStorage.getItem(STORAGE_KEY);
+  if (current) return current;
+  for (const key of LEGACY_STORAGE_KEYS) {
+    const legacy = window.localStorage.getItem(key);
+    if (legacy) {
+      window.localStorage.setItem(STORAGE_KEY, legacy);
+      return legacy;
+    }
+  }
+  return null;
+}
+
 if (typeof window !== "undefined") {
-  const saved = window.localStorage.getItem(STORAGE_KEY);
+  const saved = readStoredMemory();
   if (saved) {
     try { memoryCache = { ...emptyMemory(), ...JSON.parse(saved) }; } catch { /* keep default */ }
   }
@@ -95,7 +112,7 @@ export function SyllabotWorkspace() {
   };
   const [pending, setPending] = useState<{ events: AcademicEvent[]; courses: StudentMemory["courses"] } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", role: "bot", text: "I'm Deadliner. Drop a syllabus, paste text, or load the demo. I'll gather the deadlines and wait for you before anything goes on the calendar. I'll flag pileups and draft emails. I never send them." },
+    { id: "welcome", role: "bot", text: "I'm Termwise. Drop a syllabus, paste text, or load the demo. I'll gather the dates and wait before anything goes on the calendar. I'll flag pileups, write the week brief, and draft emails. I never send them." },
   ]);
   const [draft, setDraft] = useState<ExtensionDraft | null>(null);
   const [composer, setComposer] = useState("");
@@ -196,12 +213,12 @@ export function SyllabotWorkspace() {
     say("user", "Add these events to my calendar.");
     if (found.length) {
       const top = found.find((item) => item.severity === "severe") ?? found[0];
-      say("bot", `Added ${incoming.length} items to your Deadliner calendar, including office hours. ${found.length} collision${found.length === 1 ? "" : "s"}: ${top.events.map((event) => event.courseCode).join(", ")} on ${formatDate(top.start)} to ${formatDate(top.end)}.`);
+      say("bot", `Added ${incoming.length} items to your Termwise calendar, including office hours. ${found.length} collision${found.length === 1 ? "" : "s"}: ${top.events.map((event) => event.courseCode).join(", ")} on ${formatDate(top.start)} to ${formatDate(top.end)}.`);
       if (top.severity === "severe") setDraft(draftExtensionRequest(next, top));
     } else {
-      say("bot", `Added ${incoming.length} items to your Deadliner calendar. No 48-hour pileups.`);
+      say("bot", `Added ${incoming.length} items to your Termwise calendar. No 48-hour pileups.`);
     }
-    notify(`${incoming.length} events are on your Deadliner calendar.`);
+    notify(`${incoming.length} events are on your Termwise calendar.`);
     void publishCalendar(next);
   }
 
@@ -227,7 +244,7 @@ export function SyllabotWorkspace() {
       notify("Add a syllabus first.");
       return;
     }
-    downloadIcs("deadliner-semester.ics", eventsToIcs(memory.events, memory.courses));
+    downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
     notify("Calendar file downloaded. Apple Calendar and Outlook will open it.");
   }
 
@@ -246,7 +263,7 @@ export function SyllabotWorkspace() {
       notify("Add a syllabus first.");
       return;
     }
-    downloadIcs("deadliner-semester.ics", eventsToIcs(memory.events, memory.courses));
+    downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
     const published = publishInfo ?? await publishCalendar();
     if (published?.icsUrl) {
       void navigator.clipboard.writeText(published.icsUrl);
@@ -299,7 +316,7 @@ export function SyllabotWorkspace() {
       if (!memory.events.length) return say("bot", "Confirm a syllabus first, then I can put it on the calendar.");
       setView("calendar");
       setShowAddCalendar(true);
-      return say("bot", "Your semester is on the Deadliner calendar. Use Add all to Google Calendar when you want exams and projects over there too.");
+      return say("bot", "Your semester is on the Termwise calendar. Use Add all to Google Calendar when you want exams and projects over there too.");
     }
     if (lower.includes("confirm") && pending) return confirmCalendar();
     if (/\b(due|exam|midterm|professor|office hours|assignment|project)\b/i.test(text) && findDateHint(text)) {
@@ -316,6 +333,15 @@ export function SyllabotWorkspace() {
     color: appearance.courseColors[course.id] ?? course.color,
   }));
   const themedMemory = { ...memory, courses: themedCourses };
+  const term = useMemo(() => buildTermProgress(memory), [memory]);
+  const viewLabel = {
+    overview: "This week",
+    chat: "Chat",
+    calendar: "Calendar",
+    collisions: "Collisions",
+    briefs: "Week brief",
+    templates: "Templates",
+  }[view];
 
   return (
     <main className="syllabot-shell" data-theme={appearance.theme} data-density={appearance.density} style={{ ["--sb-accent" as string]: appearance.accent }}>
@@ -323,7 +349,7 @@ export function SyllabotWorkspace() {
         <div className="flex items-center gap-2.5 px-2">
           <BrandMark size={32} />
           <div>
-            <p className="text-lg font-semibold tracking-tight">Deadliner</p>
+            <p className="text-lg font-semibold tracking-tight">Termwise</p>
             <p className="text-xs text-[var(--sb-muted)]">Semester desk</p>
           </div>
         </div>
@@ -355,12 +381,15 @@ export function SyllabotWorkspace() {
       </aside>
 
       <section className="pb-24 lg:pb-0 lg:pl-[220px]">
-        <header className="sticky top-0 z-40 flex h-14 items-center border-b border-[var(--sb-line)] bg-[var(--sb-bg)]/90 px-5 backdrop-blur md:px-8">
-          <div className="flex items-center gap-2 lg:hidden">
-            <BrandMark size={28} />
-            <p className="text-sm font-medium">Deadliner</p>
+        <header className="sticky top-0 z-40 flex h-14 items-center border-b border-[var(--sb-line)] bg-[var(--sb-bg)]/90 px-4 backdrop-blur sm:px-5 md:px-8">
+          <div className="flex min-w-0 items-center gap-2.5 lg:hidden">
+            <BrandMark size={30} />
+            <div className="min-w-0 leading-tight">
+              <p className="text-sm font-semibold tracking-tight">Termwise</p>
+              <p className="truncate text-[10px] text-[var(--sb-muted)]">{viewLabel}</p>
+            </div>
           </div>
-          <p className="hidden text-sm text-[var(--sb-muted)] sm:block lg:ml-0">{firstName} · I&apos;ll keep the desk tidy</p>
+          <p className="hidden text-sm text-[var(--sb-muted)] lg:block">{firstName} · I&apos;ll keep the desk tidy</p>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={() => setShowSettings(true)} className="sb-btn-ghost h-9" type="button"><Settings className="size-3.5" /> <span className="hidden sm:inline">Customize</span></button>
             <button type="button" onClick={() => { setView("calendar"); if (memory.events.length) setShowAddCalendar(true); }} className="sb-btn-ghost hidden h-9 md:inline-flex"><CalendarDays className="size-3.5" /> Calendar</button>
@@ -376,6 +405,7 @@ export function SyllabotWorkspace() {
               memory={themedMemory}
               appearance={appearance}
               brief={brief}
+              term={term}
               collisions={collisions}
               weekEvents={weekEvents}
               completed={completed}
@@ -392,7 +422,7 @@ export function SyllabotWorkspace() {
           {view === "calendar" && (
             memory.events.length
               ? <SemesterCalendar events={memory.events} courses={themedCourses} collisions={collisions} subscribeUrl={publishInfo?.icsUrl} onAddAll={() => setShowAddCalendar(true)} onCopySubscribe={() => copySubscribeLink()} />
-              : <Empty title="Calendar is empty" body="Confirm a syllabus and I’ll lay out the deadlines, exams, readings, and office hours by course color." />
+              : <Empty title="Calendar is empty" body="Confirm a syllabus and I will lay out the deadlines, exams, readings, and office hours by course color." />
           )}
           {view === "chat" && (
             <ChatPanel messages={messages} composer={composer} setComposer={setComposer} onSend={() => handlePrompt(composer)} onDemo={loadDemo} onCalendar={() => handlePrompt("add to calendar")} />
@@ -470,22 +500,23 @@ export function SyllabotWorkspace() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <Badge className="mb-2 bg-[#e8f7f1] text-[#16856b]">{memory.events.length} EVENTS ON DEADLINER</Badge>
+                  <Badge className="mb-2 bg-[#e8f7f1] text-[#16856b]">{memory.events.length} EVENTS ON TERMWISE</Badge>
                   <h2 className="text-2xl font-semibold tracking-tight">Put them on your own calendar</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">They&apos;re already on the Deadliner calendar, color-coded by course. Google stays untouched until you click. Download the .ics, or open Google Calendar and paste the subscribe link.</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">They&apos;re on the Termwise calendar, color-coded by course. Google stays untouched until you click.</p>
                 </div>
                 <button onClick={() => setShowAddCalendar(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
               </div>
-              <div className="mt-5 space-y-2 text-sm">
-                <div className="rounded-xl bg-[#f6f7f3] px-4 py-3">The .ics includes 1 to 3 day reminders so exams and papers do not land the night before. Apple Calendar and Outlook open it directly.</div>
-                <div className="rounded-xl bg-[#f6f7f3] px-4 py-3">Add all opens one Google “From URL” tab and copies the subscribe link. Individual exams stay one click each so the browser does not block a stack of tabs.</div>
-                {publishInfo?.icsUrl && (
-                  <div className="flex items-center gap-2 rounded-xl border border-[#dfe3dd] px-4 py-3">
-                    <code className="min-w-0 flex-1 truncate text-xs text-[#3d4b47]">{publishInfo.icsUrl}</code>
-                    <button className="sb-btn-ghost h-8" onClick={() => copySubscribeLink()}><Copy className="size-3.5" /> Copy</button>
-                  </div>
-                )}
-              </div>
+              <ol className="mt-5 space-y-2 text-sm">
+                <li className="rounded-xl bg-[#f6f7f3] px-4 py-3"><span className="mr-2 font-semibold">1.</span>Copy the subscribe link, or download the .ics (Apple Calendar and Outlook open it, with 1 to 3 day reminders).</li>
+                <li className="rounded-xl bg-[#f6f7f3] px-4 py-3"><span className="mr-2 font-semibold">2.</span>In Google Calendar: Settings, Add calendar, From URL. Paste the link. One tab only, so the browser does not block a stack.</li>
+                <li className="rounded-xl bg-[#f6f7f3] px-4 py-3"><span className="mr-2 font-semibold">3.</span>Exams and projects can also be added one click each, below.</li>
+              </ol>
+              {publishInfo?.icsUrl && (
+                <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#dfe3dd] px-4 py-3">
+                  <code className="min-w-0 flex-1 truncate text-xs text-[#3d4b47]">{publishInfo.icsUrl}</code>
+                  <button className="sb-btn-ghost h-8" onClick={() => copySubscribeLink()}><Copy className="size-3.5" /> Copy</button>
+                </div>
+              )}
               {priorityCalendarEvents(memory.events, 6).length > 0 && (
                 <div className="mt-4 space-y-2">
                   <p className="text-[10px] font-bold tracking-[.14em] text-[#82908c]">EXAMS AND PROJECTS, ONE CLICK EACH</p>
@@ -524,7 +555,7 @@ export function SyllabotWorkspace() {
               <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[#e3e6e0] p-4 font-sans text-sm leading-7 text-[#46534f]">{draft.body}</pre>
               <div className="mt-5 flex justify-end gap-2">
                 <button onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="sb-btn-ghost"><Copy className="size-4" /> Copy</button>
-                <button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Deadliner did not send it."); }} className="sb-btn"><Send className="size-4" /> Review in email</button>
+                <button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Termwise did not send it."); }} className="sb-btn"><Send className="size-4" /> Review in email</button>
               </div>
             </CardContent>
           </Card>
@@ -564,10 +595,11 @@ function findDateHint(text: string) {
   return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{1,2}\/\d{1,2})\b/i.test(text);
 }
 
-function Overview({ memory, appearance, brief, collisions, weekEvents, completed, setCompleted, onDemo, onUpload, onCollision, onCalendar, onDraft, onBrief, onCustomize }: {
+function Overview({ memory, appearance, brief, term, collisions, weekEvents, completed, setCompleted, onDemo, onUpload, onCollision, onCalendar, onDraft, onBrief, onCustomize }: {
   memory: StudentMemory;
   appearance: Appearance;
   brief: ReturnType<typeof buildWeeklyBrief>;
+  term: TermProgress | null;
   collisions: Collision[];
   weekEvents: AcademicEvent[];
   completed: string[];
@@ -582,11 +614,34 @@ function Overview({ memory, appearance, brief, collisions, weekEvents, completed
 }) {
   if (!memory.events.length) {
     return (
-      <div className="mx-auto max-w-xl py-16">
-        <p className="text-xs uppercase tracking-[0.16em] text-[var(--sb-muted)]">Day one</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Put the syllabi on the desk.</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--sb-muted)]">I&apos;ll pull the deadlines, wait for you, then watch for pileups and draft emails. Colors and widgets are yours. Open Customize anytime.</p>
-        <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mx-auto max-w-2xl py-8 md:py-14">
+        <div className="flex items-center gap-3">
+          <BrandMark size={44} />
+          <div>
+            <p className="text-xs uppercase tracking-[0.16em] text-[var(--sb-muted)]">Semester desk</p>
+            <h1 className="text-3xl font-semibold tracking-tight">Termwise</h1>
+          </div>
+        </div>
+        <p className="mt-5 max-w-xl text-[15px] leading-7 text-[var(--sb-ink)]">
+          Extract syllabi, confirm the dates, catch 48-hour pileups, read the week brief, and draft an extension if you need one. Termwise never sends.
+        </p>
+        <ol className="mt-6 grid gap-3 sm:grid-cols-2">
+          {[
+            ["1", "Extract", "PDF or paste. I wait for you."],
+            ["2", "Calendar", "Color-coded term, plus office hours."],
+            ["3", "This week", "Load, pileups, Sunday brief."],
+            ["4", "Draft", "An extension email. Never sent."],
+          ].map(([step, title, body]) => (
+            <li key={step} className="sb-card flex gap-3 p-4">
+              <span className="text-xs font-semibold text-[var(--sb-muted)]">{step}</span>
+              <div>
+                <p className="text-sm font-semibold">{title}</p>
+                <p className="mt-0.5 text-xs leading-5 text-[var(--sb-muted)]">{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-7 flex flex-wrap gap-2">
           <button onClick={onUpload} className="sb-btn">Add a syllabus</button>
           <button onClick={onDemo} className="sb-btn-ghost">Load demo semester</button>
           <button onClick={onCustomize} className="sb-btn-ghost">Customize</button>
@@ -597,6 +652,25 @@ function Overview({ memory, appearance, brief, collisions, weekEvents, completed
 
   const severe = collisions.find((item) => item.severity === "severe");
   const widgets = {
+    term: term && (
+      <div className="sb-card p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.14em] text-[var(--sb-muted)]">Term</p>
+            <h2 className="mt-2 text-xl font-semibold">{term.fromLabel} to {term.toLabel}</h2>
+            <p className="mt-1 text-sm text-[var(--sb-muted)]">
+              {term.percent}% through · {term.remainingCount} left
+              {term.remainingMajors ? ` · ${term.remainingMajors} major${term.remainingMajors === 1 ? "" : "s"}` : ""}
+              {term.doneCount ? ` · ${term.doneCount} done` : ""}
+            </p>
+          </div>
+          {term.nextTitle && (
+            <p className="text-sm text-[var(--sb-muted)]">Next: {term.nextTitle}{term.nextDate ? ` · ${formatDate(term.nextDate)}` : ""}</p>
+          )}
+        </div>
+        <Progress value={term.percent} className="mt-4 h-1 bg-[var(--sb-soft)] [&>div]:bg-[var(--sb-accent)]" />
+      </div>
+    ),
     collision: severe && (
       <div className="sb-card p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -676,7 +750,9 @@ function Overview({ memory, appearance, brief, collisions, weekEvents, completed
       <div className="flex items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">This week</h1>
-          <p className="mt-1 text-sm text-[var(--sb-muted)]">Move these around in Customize if you like.</p>
+          <p className="mt-1 text-sm text-[var(--sb-muted)]">
+            {term ? `${term.fromLabel} to ${term.toLabel} · ${term.percent}% through the term.` : "Move these around in Customize if you like."}
+          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={onCalendar} className="sb-btn-ghost">Open calendar</button>
@@ -685,7 +761,7 @@ function Overview({ memory, appearance, brief, collisions, weekEvents, completed
       </div>
       <div className={`grid gap-4 ${appearance.density === "compact" ? "md:grid-cols-2" : "md:grid-cols-2"}`}>
         {appearance.widgets.filter((widget) => widget.visible && widgets[widget.id]).map((widget) => (
-          <div key={widget.id} className={widget.id === "due" || widget.id === "collision" ? "md:col-span-2" : ""}>
+          <div key={widget.id} className={widget.id === "due" || widget.id === "collision" || widget.id === "term" ? "md:col-span-2" : ""}>
             {widgets[widget.id]}
           </div>
         ))}
@@ -700,7 +776,7 @@ function ChatPanel({ messages, composer, setComposer, onSend, onDemo, onCalendar
       <div className="flex-1 space-y-4 overflow-y-auto p-5">
         {messages.map((message) => (
           <div key={message.id} className={`max-w-[80%] py-1 text-sm leading-6 ${message.role === "user" ? "ml-auto text-right" : ""}`}>
-            <p className="mb-1 text-[11px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">{message.role === "user" ? "You" : "Deadliner"}</p>
+            <p className="mb-1 text-[11px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">{message.role === "user" ? "You" : "Termwise"}</p>
             <pre className="whitespace-pre-wrap font-sans">{message.text}</pre>
           </div>
         ))}
@@ -723,7 +799,7 @@ function ChatPanel({ messages, composer, setComposer, onSend, onDemo, onCalendar
 
 function CollisionsPanel({ collisions, onDraft, onExport }: { collisions: Collision[]; onDraft: (collision: Collision) => void; onExport: () => void }) {
   if (!collisions.length) {
-    return <Empty title="No collisions yet" body="Confirm a syllabus and I’ll look for 48-hour pileups." />;
+    return <Empty title="No collisions yet" body="Confirm a syllabus and I will look for 48-hour pileups." />;
   }
   return (
     <div className="space-y-4">
@@ -764,7 +840,7 @@ function BriefPanel({ memory, brief, collisions, onSchedule }: { memory: Student
 
 function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
   const blocks = [
-    { title: "1. Identity", body: DEADLINER_IDENTITY },
+    { title: "1. Identity", body: TERMWISE_IDENTITY },
     { title: "2. Connect plugins", body: CONNECT_PLUGINS },
     { title: "3. extract-syllabus", body: EXTRACT_SYLLABUS_SKILL },
     { title: "4. check-collisions", body: CHECK_COLLISIONS_SKILL },
@@ -774,8 +850,8 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
   return (
     <div className="space-y-4">
       <div className="sb-card p-6">
-        <h1 className="text-2xl font-semibold">Shared Bot template</h1>
-        <p className="mt-2 text-sm text-[var(--sb-muted)]">Copy these into Grok Bot if you want the same desk there. Files also live in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.</p>
+        <h1 className="text-2xl font-semibold">Termwise Bot template</h1>
+        <p className="mt-2 text-sm text-[var(--sb-muted)]">In Grok: New, Create new agent, name it Termwise. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.</p>
         <pre className="mt-4 whitespace-pre-wrap bg-[var(--sb-soft)] p-4 text-xs leading-6">{GROK_SETUP_STEPS}</pre>
       </div>
       {blocks.map((block) => (
@@ -793,11 +869,8 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
 
 function BrandMark({ size = 32 }: { size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width={size} height={size} className="shrink-0" role="img" aria-label="Deadliner">
-      <circle cx="32" cy="32" r="32" fill="#C45C26" />
-      <path fill="#F7F1E8" fillRule="evenodd" d="M20 11h14c13.2 0 22 9.1 22 21s-8.8 21-22 21H20V11Zm9 8v26h5c8.4 0 13.5-5.8 13.5-13S42.4 19 34 19h-5Z" />
-      <path fill="none" stroke="#C45C26" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" d="M23.2 33.1 27 37l8.6-9.8" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/termwise-mark.svg" alt="Termwise" width={size} height={size} className="shrink-0" />
   );
 }
 

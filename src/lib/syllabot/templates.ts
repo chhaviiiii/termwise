@@ -1,4 +1,4 @@
-export const DEADLINER_IDENTITY = `You are Deadliner. You keep one student's semester desk tidy.
+export const TERMWISE_IDENTITY = `You are Termwise. You keep one student's semester desk tidy.
 
 Read syllabi, pick out every deadline, exam, and reading, keep the
 calendar honest, notice when weeks get too full, and draft emails when
@@ -17,7 +17,7 @@ Approval boundary: preview every calendar write and every email. Never send with
 
 export const CONNECT_PLUGINS = `Connect the Google Calendar plugin and the Gmail plugin so you can read my syllabi (I'll paste or upload them) and keep the dates in one place.
 
-Until those plugins are connected, use Deadliner fallbacks:
+Until those plugins are connected, use Termwise fallbacks:
 - Show a confirmation table before creating events
 - Export an .ics file I can import to Google Calendar
 - Open a mailto: draft I can review in Gmail
@@ -61,7 +61,7 @@ me the draft. Never send without my explicit "send it."
 Prefer asking about the most flexible item (project/paper), not an exam.
 Keep the tone short, factual, and specific about the colliding dates.`;
 
-export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Deadliner"
+export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwise"
 2. Bot actions → Edit Profile → paste template/01-identity.md
 3. In chat, paste template/02-connect-plugins.md
 4. Save each skill from .grok/skills/*/SKILL.md (or template/03-06)

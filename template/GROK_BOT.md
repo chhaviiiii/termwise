@@ -1,10 +1,10 @@
-# Install Deadliner in Grok Bot
+# Install Termwise in Grok Bot
 
 This folder is the shareable Bot template. It has no API keys and no student data.
 
-Deadliner is both a working web app in this repo and a Grok Bot. Create the Bot, then paste the identity, skills, and Sunday routine so it matches the app.
+Termwise is both a working web app in this repo and a Grok Bot. Create the Bot, then paste the identity, skills, and Sunday routine so it matches the app.
 
-1. In Grok: **New → Create new agent → name it "Deadliner"**
+1. In Grok: **New → Create new agent → name it "Termwise"**
 2. **Bot actions → Edit Profile** and paste `01-identity.md`
 3. In the new chat, paste `02-connect-plugins.md`
 4. Add the four skills from `.grok/skills/` (or `03-06` in this folder)

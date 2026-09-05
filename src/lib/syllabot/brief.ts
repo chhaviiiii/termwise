@@ -1,6 +1,6 @@
-import { addDays, format, isWithinInterval, parseISO, startOfDay } from "date-fns";
-import type { AcademicEvent, Collision, StudentMemory, WeeklyBrief } from "./types";
-import { findCollisions } from "./collisions";
+import { addDays, differenceInCalendarDays, format, isWithinInterval, parseISO, startOfDay } from "date-fns";
+import type { AcademicEvent, Collision, StudentMemory, TermProgress, WeeklyBrief } from "./types";
+import { findCollisions, isMajorDeadline } from "./collisions";
 
 export function eventsInRange(events: AcademicEvent[], start: Date, end: Date) {
   return events.filter((event) => {
@@ -21,7 +21,7 @@ export function buildWeeklyBrief(memory: StudentMemory, now = new Date()): Weekl
   const startEarly = pickStartEarly(items);
 
   return {
-    weekLabel: `${format(start, "MMM d")} - ${format(weekEnd, "MMM d")}`,
+    weekLabel: `${format(start, "MMM d")} to ${format(weekEnd, "MMM d")}`,
     rangeStart: format(start, "yyyy-MM-dd"),
     rangeEnd: format(weekEnd, "yyyy-MM-dd"),
     items,
@@ -52,7 +52,7 @@ export function formatBriefEmail(memory: StudentMemory, brief: WeeklyBrief, coll
     ? collisions.map((collision) => `- ${collision.severity === "severe" ? "SEVERE" : "Watch"}: ${collision.events.map((event) => event.courseCode).join(", ")} on ${collision.start} to ${collision.end}`).join("\n")
     : "- No 48-hour pileups in the next two weeks.";
 
-  return `Subject: Deadliner week-ahead (${brief.weekLabel})
+  return `Subject: Termwise week-ahead (${brief.weekLabel})
 
 Hi ${memory.studentName.split(" ")[0]},
 
@@ -67,5 +67,31 @@ ${collisionLines}
 One thing to start early:
 ${brief.startEarly ? `- ${brief.startEarly.title}: ${brief.startEarly.reason}` : "- Keep the lighter week and get ahead on readings."}
 
-Deadliner`;
+Termwise`;
+}
+
+export function buildTermProgress(memory: StudentMemory, now = new Date()): TermProgress | null {
+  const graded = memory.events
+    .filter((event) => event.kind !== "office-hour")
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  if (!graded.length) return null;
+  const start = parseISO(graded[0].date);
+  const end = parseISO(graded[graded.length - 1].date);
+  const today = startOfDay(now);
+  const todayKey = format(today, "yyyy-MM-dd");
+  const span = Math.max(1, differenceInCalendarDays(end, start));
+  const elapsed = differenceInCalendarDays(today, start);
+  const percent = Math.max(0, Math.min(100, Math.round((elapsed / span) * 100)));
+  const remaining = graded.filter((event) => event.date >= todayKey);
+  const next = remaining[0] ?? null;
+  return {
+    fromLabel: format(start, "MMM d"),
+    toLabel: format(end, "MMM d"),
+    percent,
+    remainingCount: remaining.length,
+    remainingMajors: remaining.filter((event) => isMajorDeadline(event)).length,
+    doneCount: graded.length - remaining.length,
+    nextTitle: next ? `${next.courseCode} ${next.title}` : null,
+    nextDate: next ? next.date : null,
+  };
 }

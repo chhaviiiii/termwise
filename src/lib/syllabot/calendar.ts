@@ -66,10 +66,10 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Deadliner//Semester Plan//EN",
+    "PRODID:-//Termwise//Semester Plan//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:Deadliner semester",
+    "X-WR-CALNAME:Termwise semester",
     "X-WR-TIMEZONE:America/Los_Angeles",
   ];
 
@@ -78,7 +78,7 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
     const color = course?.color ?? "#193c38";
     lines.push(
       "BEGIN:VEVENT",
-      `UID:${event.id}@deadliner`,
+      `UID:${event.id}@termwise`,
       `DTSTAMP:${utcStamp(new Date())}`,
       `DTSTART;TZID=America/Los_Angeles:${compact(eventStart(event))}`,
       `DTEND;TZID=America/Los_Angeles:${compact(eventEnd(event))}`,
@@ -108,7 +108,7 @@ export function googleCalendarUrl(event: AcademicEvent) {
     action: "TEMPLATE",
     text: `${event.courseCode} - ${event.title}`,
     dates: `${compact(eventStart(event))}/${compact(eventEnd(event))}`,
-    details: `${event.kind} · ~${event.estimatedHours}h · added by Deadliner`,
+    details: `${event.kind} · ~${event.estimatedHours}h · added by Termwise`,
     ctz: "America/Los_Angeles",
   });
   if (event.location) params.set("location", event.location);
@@ -120,7 +120,7 @@ export function outlookCalendarUrl(event: AcademicEvent) {
     subject: `${event.courseCode} - ${event.title}`,
     startdt: eventStart(event).toISOString(),
     enddt: eventEnd(event).toISOString(),
-    body: `${event.kind} · ~${event.estimatedHours}h · added by Deadliner`,
+    body: `${event.kind} · ~${event.estimatedHours}h · added by Termwise`,
     path: "/calendar/action/compose",
     rru: "addevent",
   });

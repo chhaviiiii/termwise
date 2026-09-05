@@ -55,6 +55,17 @@ export type WeeklyBrief = {
   startEarly: { title: string; reason: string } | null;
 };
 
+export type TermProgress = {
+  fromLabel: string;
+  toLabel: string;
+  percent: number;
+  remainingCount: number;
+  remainingMajors: number;
+  doneCount: number;
+  nextTitle: string | null;
+  nextDate: string | null;
+};
+
 export type StudentMemory = {
   studentName: string;
   weeklyCapacityHours: number;

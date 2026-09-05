@@ -4,7 +4,7 @@ import { join } from "node:path";
 type StoredCalendar = { ics: string; createdAt: number };
 
 const TTL_MS = 1000 * 60 * 60 * 24;
-const DIR = join("/tmp", "syllabot-calendars");
+const DIR = join("/tmp", "termwise-calendars");
 const memory = new Map<string, StoredCalendar>();
 
 function ensureDir() {

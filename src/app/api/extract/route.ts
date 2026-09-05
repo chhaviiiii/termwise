@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Deadliner extraction failed", error);
+    console.error("Termwise extraction failed", error);
     return NextResponse.json(
       { error: "We could not read that syllabus. Try pasted text or an exported, text-based PDF." },
       { status: 422 },

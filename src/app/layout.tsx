@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Deadliner",
+  title: "Termwise",
   description: "Drop in syllabi, keep the calendar tidy, and draft extension emails. Nothing goes out until you say so.",
   icons: {
-    icon: "/deadliner-mark.svg",
-    apple: "/deadliner-mark.png",
+    icon: "/termwise-mark.svg",
+    apple: "/termwise-mark.png",
   },
 };
 
