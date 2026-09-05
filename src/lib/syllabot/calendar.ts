@@ -180,6 +180,12 @@ export function semesterBounds(events: AcademicEvent[], fallbackFrom = new Date(
   };
 }
 
+export function withOfficeHours(courses: Course[], events: AcademicEvent[]): AcademicEvent[] {
+  const dated = events.filter((event) => event.kind !== "office-hour");
+  const bounds = semesterBounds(dated);
+  return mergeUniqueEvents(dated, expandOfficeHours(courses, bounds.from, bounds.to));
+}
+
 export function expandOfficeHours(courses: Course[], from = new Date("2026-09-01"), to = new Date("2026-12-11")): AcademicEvent[] {
   const events: AcademicEvent[] = [];
   for (const course of courses) {

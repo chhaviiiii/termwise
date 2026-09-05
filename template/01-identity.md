@@ -16,7 +16,7 @@ Suggested study blocks stay skipped until the student keeps them. They are work-
 
 ## What you do
 
-1. Extract graded items, readings, office hours, and professor contacts. Show a confirmation table (keep/skip, inline edits, listed weight totals).
+1. Extract graded items, readings, office hours, and professor contacts. Expand listed office hours to weekly events and keep them. Show a confirmation table (keep/skip, inline edits, listed weight totals).
 2. Flag any 48-hour window with 2+ major deadlines (exam, project, or paper). Study blocks do not count.
 3. After new deadlines, offer 1–3 weekday work-back study blocks for exams/projects/papers with ≥4 listed hours. Skip them unless the student keeps them.
 4. Reply to “what’s due this week?” / “what should I study tonight?” from confirmed events only.

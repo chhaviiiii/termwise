@@ -43,9 +43,31 @@ export function ConfirmTable({
   const skippedSet = new Set(skipped);
 
   const suggested = events.filter((event) => event.suggested);
+  const officeHours = events.filter((event) => event.kind === "office-hour");
+  const rows = events.filter((event) => event.kind !== "office-hour");
+  const officeByCourse = courses
+    .map((course) => ({
+      course,
+      count: officeHours.filter((event) => event.courseId === course.id || event.courseCode === course.code).length,
+    }))
+    .filter((item) => item.course.officeHours || item.count);
 
   return (
     <div className="space-y-3">
+      {officeByCourse.length > 0 && (
+        <div className="rounded-xl border border-[var(--sb-line)] bg-[var(--sb-soft)] px-3 py-2.5">
+          <p className="text-[11px] font-medium text-[var(--sb-ink)]">Weekly office hours — always kept</p>
+          <div className="mt-1.5 space-y-0.5 text-[11px] text-[var(--sb-muted)]">
+            {officeByCourse.map(({ course, count }) => (
+              <p key={course.id}>
+                <span className="font-semibold text-[var(--sb-ink)]">{course.code}</span>
+                {course.officeHours ? ` · ${course.officeHours}` : ""}
+                {count ? ` · ${count} weeks` : ""}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
       {suggested.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[11px] text-[var(--sb-muted)]">{suggested.length} suggested study block{suggested.length === 1 ? "" : "s"} from listed hours — off until you keep them.</p>
@@ -71,7 +93,7 @@ export function ConfirmTable({
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => {
+            {rows.map((event) => {
               const off = skippedSet.has(event.id);
               return (
                 <tr key={event.id} className={`border-t border-[var(--sb-line)] ${off ? "opacity-40" : ""}`}>
@@ -100,7 +122,7 @@ export function ConfirmTable({
       </div>
       <div className="space-y-1 text-[11px] text-[var(--sb-muted)]">
         {courses.map((course) => {
-          const kept = events.filter((event) => event.courseCode === course.code && !skippedSet.has(event.id));
+          const kept = rows.filter((event) => event.courseCode === course.code && !skippedSet.has(event.id));
           const { total, counted } = courseWeightTotals(kept, course.code);
           return (
             <p key={course.id}>

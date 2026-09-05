@@ -1,4 +1,5 @@
 import { parse, isValid } from "date-fns";
+import { withOfficeHours } from "./calendar";
 import { paletteForIndex } from "./palette";
 import type { AcademicEvent, Course, EventKind, ExtractionResult } from "./types";
 
@@ -187,7 +188,7 @@ export function extractFromText(text: string, fileName = "syllabus.txt", colorIn
 
   events.sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
   if (!events.length) warnings.push("No dated items found. Try a text-based syllabus with month/day dates.");
-  return { course, events, warnings };
+  return { course, events: withOfficeHours([course], events), warnings };
 }
 
 export function mergeExtractions(results: ExtractionResult[], existingCourses: Course[] = []) {
@@ -207,5 +208,5 @@ export function mergeExtractions(results: ExtractionResult[], existingCourses: C
     events.push(...result.events.map((event) => ({ ...event, courseId: course.id, courseCode: course.code })));
   });
 
-  return { courses, events };
+  return { courses, events: withOfficeHours(courses, events) };
 }

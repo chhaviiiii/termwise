@@ -25,7 +25,7 @@ import {
   draftExtensionRequest,
   eventBelongsToCourse,
   eventsToIcs,
-  expandOfficeHours,
+  withOfficeHours,
   extractFromText,
   findCollisions,
   formatBriefEmail,
@@ -36,7 +36,6 @@ import {
   mergeUniqueEvents,
   removeCourseFromMemory,
   reviewMailHref,
-  semesterBounds,
   suggestStudyBlocks,
   type AcademicEvent,
   type CalendarDestination,
@@ -179,13 +178,15 @@ export function SyllabotWorkspace() {
   }
 
   function ingest(courses: StudentMemory["courses"], events: AcademicEvent[], source: string) {
-    const reviewed = annotateEventReviews(events, memory.events);
+    const withHours = withOfficeHours(courses, events);
+    const reviewed = annotateEventReviews(withHours, memory.events);
     const suggestions = suggestStudyBlocks(reviewed).filter((block) => !memory.events.some((event) => event.id === block.id));
+    const officeHours = reviewed.filter((event) => event.kind === "office-hour").length;
     const skipped = suggestions.map((block) => block.id);
     setPending({ courses, events: [...reviewed, ...suggestions], skipped });
     setShowUpload(true);
     const changed = reviewed.filter((event) => event.review === "changed").length;
-    say("bot", `${source}: ${reviewed.length} dated item${reviewed.length === 1 ? "" : "s"} across ${courses.length} course${courses.length === 1 ? "" : "s"}${suggestions.length ? `, plus ${suggestions.length} suggested study block${suggestions.length === 1 ? "" : "s"}` : ""}${changed ? `, ${changed} changed` : ""}. Edit or skip rows, then confirm.`);
+    say("bot", `${source}: ${reviewed.length} dated item${reviewed.length === 1 ? "" : "s"} across ${courses.length} course${courses.length === 1 ? "" : "s"}${officeHours ? `, including weekly office hours` : ""}${suggestions.length ? `, plus ${suggestions.length} suggested study block${suggestions.length === 1 ? "" : "s"}` : ""}${changed ? `, ${changed} changed` : ""}. Edit or skip rows. Office hours stay on. Then confirm.`);
   }
 
   function loadDemo() {
@@ -265,13 +266,12 @@ export function SyllabotWorkspace() {
         courses.push({ ...course });
       }
     }
-    const kept = pending.events.filter((event) => !pending.skipped.includes(event.id));
+    const kept = pending.events.filter((event) => event.kind === "office-hour" || !pending.skipped.includes(event.id));
     if (!kept.length) {
       notify("Keep at least one row, or go back.");
       return;
     }
-    const bounds = semesterBounds(kept);
-    const incoming = mergeUniqueEvents(kept, expandOfficeHours(courses, bounds.from, bounds.to));
+    const incoming = withOfficeHours(courses, kept);
     const next: StudentMemory = {
       ...memory,
       courses,
@@ -605,6 +605,8 @@ export function SyllabotWorkspace() {
                       onChange={(id, patch) => setPending((current) => current ? { ...current, events: current.events.map((event) => event.id === id ? { ...event, ...patch } : event) } : current)}
                       onToggle={(id) => setPending((current) => {
                         if (!current) return current;
+                        const event = current.events.find((item) => item.id === id);
+                        if (event?.kind === "office-hour") return current;
                         const skipped = current.skipped.includes(id)
                           ? current.skipped.filter((item) => item !== id)
                           : [...current.skipped, id];
