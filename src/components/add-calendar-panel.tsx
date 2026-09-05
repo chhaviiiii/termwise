@@ -8,6 +8,8 @@ import {
   DESTINATIONS,
   DESTINATION_RECONNECT_NOTE,
   calendarComposeUrl,
+  downloadIcs,
+  eventsToIcs,
   priorityCalendarEvents,
   type AcademicEvent,
   type CalendarDestination,
@@ -60,7 +62,7 @@ export function AddCalendarPanel({
               <Badge className="mb-2 bg-[var(--sb-soft)] text-[var(--sb-ink)]">{events.length} events on Termwise</Badge>
               <h2 className="text-2xl font-semibold tracking-tight">Where should they go?</h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--sb-muted)]">
-                They&apos;re on the Termwise calendar, color-coded by course. {chosen.calendarLabel} and {chosen.mailLabel} stay untouched until you click.
+                They&apos;re on the Termwise calendar, color-coded by course. Pick Google, Outlook, or a file — nothing is connected until you click.
               </p>
             </div>
             <button type="button" onClick={onClose} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>
@@ -102,7 +104,9 @@ export function AddCalendarPanel({
                     <button
                       type="button"
                       className="sb-btn-ghost h-8 shrink-0"
-                      onClick={() => window.open(calendarComposeUrl(event, destination, course), "_blank", "noopener,noreferrer")}
+                      onClick={() => destination === "file"
+                        ? downloadIcs(`${event.courseCode}-${event.title}.ics`, eventsToIcs([event], course ? [course] : []))
+                        : window.open(calendarComposeUrl(event, destination, course), "_blank", "noopener,noreferrer")}
                     >
                       {chosen.addOneLabel}
                     </button>
@@ -115,7 +119,9 @@ export function AddCalendarPanel({
           <p className="mt-4 text-[11px] leading-5 text-[var(--sb-muted)]">{DESTINATION_RECONNECT_NOTE} Termwise never writes a calendar or sends mail without your click.</p>
 
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <button type="button" onClick={onDownload} className="sb-btn-ghost"><Download className="size-4" /> Download .ics</button>
+            {destination !== "file" && (
+              <button type="button" onClick={onDownload} className="sb-btn-ghost"><Download className="size-4" /> Download .ics</button>
+            )}
             <button type="button" onClick={onAddAll} className="sb-btn"><CalendarDays className="size-4" /> {chosen.addAllLabel}</button>
           </div>
         </CardContent>

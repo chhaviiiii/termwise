@@ -12,7 +12,7 @@ export function DestinationChoice({
   compact?: boolean;
 }) {
   return (
-    <div className={`grid gap-2 ${compact ? "grid-cols-2" : "sm:grid-cols-2"}`}>
+    <div className={`grid gap-2 ${compact ? "grid-cols-3" : "sm:grid-cols-3"}`}>
       {(Object.values(DESTINATIONS) as typeof DESTINATIONS[CalendarDestination][]).map((option) => {
         const active = value === option.id;
         return (

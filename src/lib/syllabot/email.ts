@@ -65,6 +65,8 @@ export function outlookMailHref(draft: ExtensionDraft) {
   return `https://outlook.live.com/mail/0/deeplink/compose?${params.toString()}`;
 }
 
-export function reviewMailHref(draft: ExtensionDraft, destination: "google" | "outlook") {
-  return destination === "outlook" ? outlookMailHref(draft) : gmailComposeHref(draft);
+export function reviewMailHref(draft: ExtensionDraft, destination: "google" | "outlook" | "file") {
+  if (destination === "outlook") return outlookMailHref(draft);
+  if (destination === "file") return mailtoHref(draft);
+  return gmailComposeHref(draft);
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { ExternalLink, Mail } from "lucide-react";
-import { calendarComposeUrl, DESTINATIONS, displayKind, formatEventWhen, type CalendarDestination } from "@/lib/syllabot";
+import { Download, ExternalLink, Mail } from "lucide-react";
+import { calendarComposeUrl, DESTINATIONS, displayKind, downloadIcs, eventsToIcs, formatEventWhen, type CalendarDestination } from "@/lib/syllabot";
 import type { AcademicEvent, Collision, Course } from "@/lib/syllabot";
 
 export function EventDrawer({
@@ -20,7 +20,7 @@ export function EventDrawer({
   onChangeDestination?: (value: CalendarDestination) => void;
 }) {
   const chosen = DESTINATIONS[destination];
-  const other = DESTINATIONS[destination === "google" ? "outlook" : "google"];
+  const courses = course ? [course] : [];
   const facts = [
     { label: "When", value: formatEventWhen(event) },
     { label: "Hours", value: event.estimatedHours ? `~${event.estimatedHours}h` : "" },
@@ -65,28 +65,41 @@ export function EventDrawer({
         <p className="mb-2 text-[10px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">Add to your calendar</p>
         {onChangeDestination && (
           <div className="mb-2 flex border border-[var(--sb-line)] p-0.5">
-            <button type="button" onClick={() => onChangeDestination("google")} className={`flex-1 px-2 py-1.5 text-[11px] font-semibold ${destination === "google" ? "bg-[var(--sb-soft)]" : "text-[var(--sb-muted)]"}`}>Google</button>
-            <button type="button" onClick={() => onChangeDestination("outlook")} className={`flex-1 px-2 py-1.5 text-[11px] font-semibold ${destination === "outlook" ? "bg-[var(--sb-soft)]" : "text-[var(--sb-muted)]"}`}>Outlook</button>
+            {(["google", "outlook", "file"] as const).map((id) => (
+              <button key={id} type="button" onClick={() => onChangeDestination(id)} className={`flex-1 px-2 py-1.5 text-[11px] font-semibold ${destination === id ? "bg-[var(--sb-soft)]" : "text-[var(--sb-muted)]"}`}>
+                {DESTINATIONS[id].shortLabel}
+              </button>
+            ))}
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="sb-btn h-9"
-            onClick={() => window.open(calendarComposeUrl(event, destination, course), "_blank", "noopener,noreferrer")}
-          >
-            <ExternalLink className="size-3.5" /> {chosen.addOneLabel}
-          </button>
+          {destination === "file" ? (
+            <button
+              type="button"
+              className="sb-btn h-9"
+              onClick={() => downloadIcs(`${event.courseCode}-${event.title}.ics`, eventsToIcs([event], courses))}
+            >
+              <Download className="size-3.5" /> {chosen.addOneLabel}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="sb-btn h-9"
+              onClick={() => window.open(calendarComposeUrl(event, destination, course), "_blank", "noopener,noreferrer")}
+            >
+              <ExternalLink className="size-3.5" /> {chosen.addOneLabel}
+            </button>
+          )}
           <button
             type="button"
             className="sb-btn-ghost h-9"
-            onClick={() => window.open(calendarComposeUrl(event, other.id, course), "_blank", "noopener,noreferrer")}
+            onClick={() => downloadIcs(`${event.courseCode}-${event.title}.ics`, eventsToIcs([event], courses))}
           >
-            {other.addOneLabel}
+            <Download className="size-3.5" /> .ics
           </button>
         </div>
         <p className="mt-2 text-[11px] leading-4 text-[var(--sb-muted)]">
-          Opens a compose tab. Termwise does not write the calendar for you.
+          {destination === "file" ? "Downloads a file. Termwise does not write the calendar for you." : "Opens a compose tab. Termwise does not write the calendar for you."}
         </p>
       </div>
 

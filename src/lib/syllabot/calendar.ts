@@ -131,7 +131,8 @@ export function outlookCalendarUrl(event: AcademicEvent, course?: Course) {
 }
 
 export function calendarComposeUrl(event: AcademicEvent, destination: CalendarDestination, course?: Course) {
-  return destination === "outlook" ? outlookCalendarUrl(event, course) : googleCalendarUrl(event, course);
+  if (destination === "outlook") return outlookCalendarUrl(event, course);
+  return googleCalendarUrl(event, course);
 }
 
 export function outlookSubscribeUrl(icsUrl: string, name = "Termwise semester") {

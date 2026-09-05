@@ -42,7 +42,7 @@ Shareable files (no secrets, no student data):
 | `template/termwise.template.json` | Portable bundle |
 | `.grok/skills/*/SKILL.md` | Installable skills |
 
-Setup steps are in `template/GROK_BOT.md` and in the app's **Templates** view (copy buttons included). Recipients reconnect their own Calendar/Gmail or Outlook. They do not inherit logins.
+Setup steps are in `template/GROK_BOT.md` and in the app's **Templates** view (copy buttons included). Recipients reconnect whichever they use — Google and/or Outlook. They do not inherit logins.
 
 ## Skills
 

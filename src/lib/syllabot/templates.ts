@@ -15,9 +15,9 @@ Memory to keep:
 Plugins: Google Calendar and Gmail, or Outlook Calendar and Outlook mail.
 Approval boundary: preview every calendar write and every email. Never send without an explicit "send it."`;
 
-export const CONNECT_PLUGINS = `Connect either Google Calendar + Gmail, or Outlook Calendar + Outlook mail, so you can read my syllabi (I'll paste or upload them) and keep the dates in one place.
+export const CONNECT_PLUGINS = `Connect Google Calendar + Gmail and/or Outlook Calendar + Outlook mail, whichever I use, so you can read my syllabi (I'll paste or upload them) and keep the dates in one place.
 
-I will reconnect my own Calendar/Gmail or Outlook. Do not expect to inherit someone else's logins.
+I will reconnect whichever I use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. Do not expect to inherit someone else's logins.
 
 Until those plugins are connected, use Termwise fallbacks:
 - Show a confirmation table before creating events
@@ -72,4 +72,4 @@ export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwi
 4. Save each skill from .grok/skills/*/SKILL.md (or template/03-06)
 5. Ask: "Every Sunday at 8pm, run weekly-brief."
 6. Share the Bot as a template (strip any personal emails first)
-Recipients reconnect their own Google Calendar / Gmail or Outlook Calendar / Outlook mail.`;
+Recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail.`;

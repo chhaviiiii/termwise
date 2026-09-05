@@ -315,6 +315,10 @@ export function SyllabotWorkspace() {
       return;
     }
     downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
+    if (destination === "file") {
+      notify("Calendar file downloaded. Import it in any calendar app. Termwise did not write anything.");
+      return;
+    }
     const published = publishInfo ?? await publishCalendar();
     if (published?.icsUrl) {
       void navigator.clipboard.writeText(published.icsUrl);
@@ -370,7 +374,7 @@ export function SyllabotWorkspace() {
       if (!memory.events.length) return say("bot", "Confirm a syllabus first, then I can put it on the calendar.");
       setView("calendar");
       setShowAddCalendar(true);
-      return say("bot", `Your semester is on the Termwise calendar. Choose Google Calendar / Gmail or Outlook Calendar / Outlook mail when you want the dates over there too. ${DESTINATION_RECONNECT_NOTE}`);
+      return say("bot", `Your semester is on the Termwise calendar. Choose Google Calendar / Gmail, Outlook Calendar / Outlook mail, or a .ics / mailto fallback when you want the dates over there too. ${DESTINATION_RECONNECT_NOTE}`);
     }
     if (lower.includes("confirm") && pending) return confirmCalendar();
     if (/\b(due|exam|midterm|professor|office hours|assignment|project)\b/i.test(text) && findDateHint(text)) {
@@ -979,7 +983,7 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
       <div className="sb-card p-6">
         <h1 className="text-2xl font-semibold">Termwise Bot template</h1>
         <p className="mt-2 text-sm leading-6 text-[var(--sb-muted)]">
-          In Grok: New, Create new agent, name it Termwise. Connect Google Calendar / Gmail <em>or</em> Outlook Calendar / Outlook mail. Recipients reconnect their own accounts — they do not inherit logins. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.
+          In Grok: New, Create new agent, name it Termwise. Recipients pick Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — they reconnect their own accounts and do not inherit logins. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.
         </p>
         <pre className="mt-4 whitespace-pre-wrap bg-[var(--sb-soft)] p-4 text-xs leading-6">{GROK_SETUP_STEPS}</pre>
       </div>

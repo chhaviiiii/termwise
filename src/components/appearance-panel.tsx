@@ -92,7 +92,7 @@ export function AppearancePanel({
 
           <section>
             <h3 className="text-sm font-semibold">Calendar &amp; mail</h3>
-            <p className="mt-1 text-xs text-[var(--sb-muted)]">Choose Google or Outlook. Termwise still uses .ics, subscribe URLs, and drafts — no OAuth, nothing sent until you click.</p>
+            <p className="mt-1 text-xs text-[var(--sb-muted)]">Pick Google, Outlook, or a file. Nothing is forced, and Termwise still uses .ics, subscribe URLs, and drafts — no OAuth, nothing sent until you click.</p>
             <div className="mt-3">
               <DestinationChoice
                 value={appearance.destination}
