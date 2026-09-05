@@ -11,12 +11,12 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   }
   const calendar = getPublishedCalendar(id);
   if (!calendar) {
-    return NextResponse.json({ error: "That calendar link expired. Publish again from Syllabot." }, { status: 404 });
+    return NextResponse.json({ error: "That calendar link expired. Publish again from Deadliner." }, { status: 404 });
   }
   return new NextResponse(calendar.ics, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `inline; filename="syllabot-${id}.ics"`,
+      "Content-Disposition": `inline; filename="deadliner-${id}.ics"`,
       "Cache-Control": "no-store",
     },
   });
