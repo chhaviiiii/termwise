@@ -107,7 +107,7 @@ export function SemesterCalendar({
               <h2 className="mt-1 text-2xl font-semibold tracking-tight">{label}</h2>
               <p className="mt-0.5 text-xs text-[var(--sb-muted)]">
                 {visible.length} events · pileup days marked
-                {subscribeUrl ? ` · subscribe into ${chosen.calendarLabel}` : ""}
+                {subscribeUrl ? (destination === "file" ? " · subscribe URL ready for any calendar" : ` · subscribe into ${chosen.calendarLabel}`) : ""}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
