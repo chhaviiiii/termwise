@@ -12,10 +12,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { CalendarDays, ChevronLeft, ChevronRight, Copy, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, Copy, ExternalLink } from "lucide-react";
 import { googleCalendarUrl, outlookCalendarUrl, sortCalendarEvents } from "@/lib/syllabot";
 import type { AcademicEvent, Collision, Course } from "@/lib/syllabot";
 
@@ -85,25 +82,24 @@ export function SemesterCalendar({
 
   return (
     <div className="space-y-4">
-      <Card className="rounded-2xl border-[#e0e3dd] bg-white py-0">
-        <CardContent className="p-5 md:p-6">
+      <div className="sb-card p-5">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="mb-1 flex items-center gap-2 text-xs font-bold tracking-[.13em] text-[#15836d]"><CalendarDays className="size-3.5" /> SEMESTER CALENDAR</div>
-              <h2 className="font-serif text-2xl font-bold">{label}</h2>
-              <p className="text-xs text-[#7c8683]">{visible.length} events · color-coded by course · collision days ringed in coral</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-[var(--sb-muted)]">Calendar</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight">{label}</h2>
+              <p className="text-xs text-[var(--sb-muted)]">{visible.length} events · collision days marked</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-lg border border-[#e4e6e0] bg-[#fafbf8] p-1">
-                <button onClick={() => setMode("week")} className={`rounded-md px-3 py-1.5 text-[11px] font-bold ${mode === "week" ? "bg-white shadow-sm" : "text-[#7d8784]"}`}>Week</button>
-                <button onClick={() => setMode("month")} className={`rounded-md px-3 py-1.5 text-[11px] font-bold ${mode === "month" ? "bg-white shadow-sm" : "text-[#7d8784]"}`}>Month</button>
+              <div className="flex border border-[var(--sb-line)] p-0.5">
+                <button onClick={() => setMode("week")} className={`px-3 py-1.5 text-[11px] font-semibold ${mode === "week" ? "bg-[var(--sb-soft)]" : "text-[var(--sb-muted)]"}`}>Week</button>
+                <button onClick={() => setMode("month")} className={`px-3 py-1.5 text-[11px] font-semibold ${mode === "month" ? "bg-[var(--sb-soft)]" : "text-[var(--sb-muted)]"}`}>Month</button>
               </div>
-              <Button variant="outline" className="h-9 rounded-lg" aria-label="Previous" onClick={() => setCursor((current) => mode === "week" ? addWeeks(current, -1) : addMonths(current, -1))}><ChevronLeft className="size-4" /></Button>
-              <Button variant="outline" className="h-9 rounded-lg" aria-label="Next" onClick={() => setCursor((current) => mode === "week" ? addWeeks(current, 1) : addMonths(current, 1))}><ChevronRight className="size-4" /></Button>
+              <button className="sb-btn-ghost h-9" aria-label="Previous" onClick={() => setCursor((current) => mode === "week" ? addWeeks(current, -1) : addMonths(current, -1))}><ChevronLeft className="size-4" /></button>
+              <button className="sb-btn-ghost h-9" aria-label="Next" onClick={() => setCursor((current) => mode === "week" ? addWeeks(current, 1) : addMonths(current, 1))}><ChevronRight className="size-4" /></button>
               {subscribeUrl && onCopySubscribe && (
-                <Button variant="outline" className="h-9 rounded-lg text-xs font-bold" onClick={onCopySubscribe}><Copy className="size-3.5" /> Copy subscribe link</Button>
+                <button className="sb-btn-ghost h-9" onClick={onCopySubscribe}><Copy className="size-3.5" /> Subscribe</button>
               )}
-              <Button onClick={onAddAll} className="h-9 rounded-lg bg-[#193c38] text-xs font-bold text-white hover:bg-[#112d2a]">Add all to Google Calendar</Button>
+              <button onClick={onAddAll} className="sb-btn h-9">Add to Google</button>
             </div>
           </div>
           <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -113,98 +109,93 @@ export function SemesterCalendar({
               ["work", "Work"],
               ["office-hour", "Office hours"],
             ] as const).map(([value, labelText]) => (
-              <button key={value} onClick={() => setFilter(value)} className={`rounded-full px-3 py-1 text-[10px] font-bold ${filter === value ? "bg-[#193c38] text-white" : "bg-[#f3f4f0] text-[#66736f]"}`}>
+              <button key={value} onClick={() => setFilter(value)} className={`px-3 py-1 text-[11px] font-medium ${filter === value ? "bg-[var(--sb-ink)] text-[var(--sb-bg)]" : "border border-[var(--sb-line)] text-[var(--sb-muted)]"}`}>
                 {labelText}
               </button>
             ))}
           </div>
           <div className="mb-3 flex flex-wrap gap-3">
             {courses.map((course) => (
-              <span key={course.id} className="flex items-center gap-1.5 text-[10px] font-bold text-[#66736f]">
-                <span className="size-2 rounded-full" style={{ background: course.color }} /> {course.code}
+              <span key={course.id} className="flex items-center gap-1.5 text-[11px] text-[var(--sb-muted)]">
+                <span className="size-1.5 rounded-full" style={{ background: course.color }} /> {course.code}
               </span>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold tracking-[.12em] text-[#8a9491]">
-            {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day) => <div key={day} className="py-1">{day}</div>)}
+          <div className="grid grid-cols-7 gap-px text-center text-[10px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <div key={day} className="py-1">{day}</div>)}
           </div>
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-px bg-[var(--sb-line)]">
             {days.map((day) => {
               const key = dayKey(day);
               const items = (byDay.get(key) ?? []).slice(0, mode === "week" ? 8 : 3);
               const extra = (byDay.get(key) ?? []).length - items.length;
               const hot = collisionDays.has(key);
               return (
-                <div key={key} className={`min-h-[108px] rounded-xl border p-2 ${hot ? "border-[#f16d55] bg-[#fff7f4]" : isSameMonth(day, cursor) ? "border-[#e7e9e4] bg-[#fcfcfa]" : "border-transparent bg-transparent opacity-45"}`}>
+                <div key={key} className={`min-h-[104px] bg-[var(--sb-card)] p-2 ${!isSameMonth(day, cursor) && mode === "month" ? "opacity-35" : ""} ${hot ? "outline outline-1 outline-[var(--sb-warn)]" : ""}`}>
                   <div className="mb-1 flex items-center justify-between">
-                    <button onClick={() => { setSelectedDay(key); setSelected(null); }} className={`grid size-6 place-items-center rounded-full text-xs font-bold ${hot ? "bg-[#f16d55] text-white" : selectedDay === key ? "bg-[#193c38] text-white" : ""}`}>{format(day, "d")}</button>
-                    {hot && <Badge className="h-4 bg-[#fff0ec] px-1 text-[8px] text-[#c44d38]">CRASH</Badge>}
+                    <button onClick={() => { setSelectedDay(key); setSelected(null); }} className={`text-xs ${hot || selectedDay === key ? "font-semibold" : ""}`}>{format(day, "d")}</button>
+                    {hot && <span className="text-[9px] uppercase tracking-[0.12em] text-[var(--sb-warn)]">pileup</span>}
                   </div>
                   <div className="space-y-1">
                     {items.map((item) => {
                       const course = courses.find((entry) => entry.code === item.courseCode);
                       return (
-                        <button key={item.id} onClick={() => { setSelected(item); setSelectedDay(key); }} className="w-full truncate rounded-md border-l-[3px] bg-white px-1.5 py-1 text-left text-[10px] font-bold leading-tight shadow-[0_1px_3px_rgba(0,0,0,.04)]" style={{ borderColor: course?.color ?? "#193c38" }}>
+                        <button key={item.id} onClick={() => { setSelected(item); setSelectedDay(key); }} className="w-full truncate border-l-2 bg-[var(--sb-bg)] px-1.5 py-1 text-left text-[10px] leading-tight" style={{ borderColor: course?.color ?? "var(--sb-ink)" }}>
                           {item.time ? `${item.time.split(" ")[0]} ` : ""}{item.title}
                         </button>
                       );
                     })}
                     {extra > 0 && (
-                      <button onClick={() => { setSelectedDay(key); setSelected(null); }} className="text-[9px] font-semibold text-[#8a9491]">+{extra} more</button>
+                      <button onClick={() => { setSelectedDay(key); setSelected(null); }} className="text-[10px] text-[var(--sb-muted)]">+{extra}</button>
                     )}
                   </div>
                 </div>
               );
             })}
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {selectedDay && dayEvents.length > 0 && !selected && (
-        <Card className="rounded-2xl border-[#e0e3dd] bg-white py-0">
-          <CardContent className="p-5">
+        <div className="sb-card p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-serif text-xl font-bold">{format(new Date(`${selectedDay}T12:00:00`), "EEEE, MMMM d")}</h3>
-              <Button variant="outline" className="h-8 rounded-lg text-xs" onClick={() => setSelectedDay(null)}>Close</Button>
+              <h3 className="text-lg font-semibold">{format(new Date(`${selectedDay}T12:00:00`), "EEEE, MMMM d")}</h3>
+              <button className="sb-btn-ghost h-8" onClick={() => setSelectedDay(null)}>Close</button>
             </div>
-            <div className="space-y-2">
+            <div className="divide-y divide-[var(--sb-line)]">
               {dayEvents.map((item) => {
                 const course = courses.find((entry) => entry.code === item.courseCode);
                 return (
-                  <button key={item.id} onClick={() => setSelected(item)} className="flex w-full items-center gap-3 rounded-xl border border-[#e7e9e4] bg-[#fcfcfa] px-3 py-2 text-left">
-                    <span className="size-2.5 rounded-full" style={{ background: course?.color ?? "#193c38" }} />
+                  <button key={item.id} onClick={() => setSelected(item)} className="flex w-full items-center gap-3 py-2 text-left">
+                    <span className="size-2 rounded-full" style={{ background: course?.color ?? "var(--sb-ink)" }} />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[10px] font-bold text-[#82908c]">{item.courseCode} · {item.kind}</span>
-                      <span className="block truncate text-sm font-bold">{item.title}</span>
+                      <span className="block text-[11px] text-[var(--sb-muted)]">{item.courseCode} · {item.kind}</span>
+                      <span className="block truncate text-sm font-medium">{item.title}</span>
                     </span>
-                    <span className="text-xs font-bold text-[#66736f]">{item.time || "All day"}</span>
+                    <span className="text-xs text-[var(--sb-muted)]">{item.time || "All day"}</span>
                   </button>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+        </div>
       )}
 
       {selected && (
-        <Card className="rounded-2xl border-[#e0e3dd] bg-white py-0">
-          <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center">
+        <div className="sb-card flex flex-col gap-4 p-5 md:flex-row md:items-center">
             <div className="flex-1">
-              <p className="text-[10px] font-bold tracking-wide text-[#82908c]">{selected.courseCode} · {selected.kind}</p>
-              <h3 className="mt-1 font-serif text-xl font-bold">{selected.title}</h3>
-              <p className="mt-1 text-sm text-[#65706d]">{format(new Date(`${selected.date}T12:00:00`), "EEEE, MMMM d")} · {selected.time || "All day"} · ~{selected.estimatedHours}h{selected.location ? ` · ${selected.location}` : ""}</p>
+              <p className="text-xs text-[var(--sb-muted)]">{selected.courseCode} · {selected.kind}</p>
+              <h3 className="mt-1 text-lg font-semibold">{selected.title}</h3>
+              <p className="mt-1 text-sm text-[var(--sb-muted)]">{format(new Date(`${selected.date}T12:00:00`), "EEEE, MMMM d")} · {selected.time || "All day"} · ~{selected.estimatedHours}h{selected.location ? ` · ${selected.location}` : ""}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button className="h-9 rounded-lg bg-[#193c38] text-xs font-bold text-white hover:bg-[#112d2a]" onClick={() => window.open(googleCalendarUrl(selected), "_blank", "noopener,noreferrer")}>
+              <button className="sb-btn h-9" onClick={() => window.open(googleCalendarUrl(selected), "_blank", "noopener,noreferrer")}>
                 <ExternalLink className="size-3.5" /> Add to Google
-              </Button>
-              <Button variant="outline" className="h-9 rounded-lg text-xs font-bold" onClick={() => window.open(outlookCalendarUrl(selected), "_blank", "noopener,noreferrer")}>
-                Add to Outlook
-              </Button>
-              <Button variant="outline" className="h-9 rounded-lg text-xs" onClick={() => setSelected(null)}>Close</Button>
+              </button>
+              <button className="sb-btn-ghost h-9" onClick={() => window.open(outlookCalendarUrl(selected), "_blank", "noopener,noreferrer")}>
+                Outlook
+              </button>
+              <button className="sb-btn-ghost h-9" onClick={() => setSelected(null)}>Close</button>
             </div>
-          </CardContent>
-        </Card>
+        </div>
       )}
     </div>
   );

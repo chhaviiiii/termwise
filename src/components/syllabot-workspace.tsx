@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   AlertTriangle, CalendarDays, Check, CheckCircle2,
   Clock3, Copy, Download, FileText, LayoutDashboard, Mail, MessageSquare,
-  Send, Settings, UploadCloud, X, Zap,
+  Send, Settings, UploadCloud, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,6 @@ import {
   DEFAULT_APPEARANCE,
   getAppearance,
   subscribeAppearance,
-  writeAppearance,
   type Appearance,
 } from "@/lib/syllabot/appearance";
 
@@ -409,7 +408,7 @@ export function SyllabotWorkspace() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-serif text-2xl font-bold">{pending ? "Confirm calendar preview" : "Add your syllabi"}</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight">{pending ? "Confirm calendar preview" : "Add your syllabi"}</h2>
                   <p className="mt-1 text-sm text-[#76817e]">{pending ? "Nothing has been written yet. Confirm to keep these events in Syllabot memory." : "Upload a PDF, paste text, or load the demo semester."}</p>
                 </div>
                 <button onClick={() => setShowUpload(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
@@ -425,8 +424,8 @@ export function SyllabotWorkspace() {
                   </button>
                   <textarea value={paste} onChange={(event) => setPaste(event.target.value)} placeholder="Or paste a syllabus here…" className="mt-4 min-h-28 w-full rounded-xl border border-[#dfe3dd] bg-[#fbfbf8] p-3 text-sm outline-none" />
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button type="button" onClick={() => ingestText(paste)} disabled={!paste.trim()} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]">Extract pasted text</Button>
-                    <Button type="button" variant="outline" onClick={loadDemo} className="rounded-lg">Load demo semester</Button>
+                    <button type="button" onClick={() => ingestText(paste)} disabled={!paste.trim()} className="sb-btn disabled:opacity-40">Extract pasted text</button>
+                    <button type="button" onClick={loadDemo} className="sb-btn-ghost">Load demo semester</button>
                   </div>
                   {processing && <p className="mt-4 text-xs font-semibold text-[#5d6b67]">Reading your syllabi…</p>}
                   {uploadError && <div className="mt-4 rounded-lg bg-[#fff0ec] px-3 py-2.5 text-xs font-semibold text-[#ad4938]">{uploadError}</div>}
@@ -450,8 +449,8 @@ export function SyllabotWorkspace() {
                     </table>
                   </div>
                   <div className="mt-5 flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setPending(null)} className="rounded-lg">Back</Button>
-                    <Button onClick={confirmCalendar} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><CalendarDays className="size-4" /> Add to calendar</Button>
+                    <button onClick={() => setPending(null)} className="sb-btn-ghost">Back</button>
+                    <button onClick={confirmCalendar} className="sb-btn"><CalendarDays className="size-4" /> Add to calendar</button>
                   </div>
                 </>
               )}
@@ -467,7 +466,7 @@ export function SyllabotWorkspace() {
               <div className="flex items-start justify-between">
                 <div>
                   <Badge className="mb-2 bg-[#e8f7f1] text-[#16856b]">{memory.events.length} EVENTS ON SYLLABOT</Badge>
-                  <h2 className="font-serif text-2xl font-bold">Add them to your real calendar</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight">Add them to your real calendar</h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#66736f]">They&apos;re already on the Syllabot calendar, color-coded by course. Google is never written without your click — download the reminder-ready .ics, or open Google Calendar and paste the subscribe link.</p>
                 </div>
                 <button onClick={() => setShowAddCalendar(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
