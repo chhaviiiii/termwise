@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { PDFParse } from "pdf-parse";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 export const runtime = "nodejs";
+
+PDFParse.setWorker(
+  pathToFileURL(join(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs")).toString(),
+);
 
 type EventKind = "exam" | "assignment" | "reading" | "office-hour" | "deadline";
 
