@@ -1,0 +1,79 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Annots [] >> endobj
+4 0 obj << /Length 1200 >> stream
+BT
+/F2 16 Tf
+72 720 Td
+(CS 301 - Algorithms) Tj
+/F1 10 Tf
+0 -22 Td
+(Fall 2026  |  Computer Science) Tj
+/F1 11 Tf
+16 TL
+T*
+(Professor: Dr. Chen \(chen@university.edu\)) Tj
+T*
+(Office hours: Tuesday 4:30-5:30 PM, Gates 214) Tj
+T*
+(Late policy: 10% per day up to 3 days; exams cannot be late.) Tj
+T*
+0 -6 Td
+T*
+(This course covers algorithm design and analysis: divide and conquer,) Tj
+T*
+(graphs, dynamic programming, and NP-completeness. Readings are from) Tj
+T*
+(CLRS. Weights below are taken from the published schedule.) Tj
+T*
+0 -6 Td
+T*
+(Graded schedule) Tj
+T*
+(Sep 10, 2026 - Problem Set 1 due 11:59 PM \(8%\)) Tj
+T*
+(Sep 24, 2026 - Problem Set 2 due 11:59 PM \(8%\)) Tj
+T*
+(Oct 8, 2026 - Problem Set 3 due 11:59 PM \(8%\)) Tj
+T*
+(Oct 12, 2026 - Midterm exam 9:00 AM, Gates 214 \(25%\)) Tj
+T*
+(Nov 5, 2026 - Problem Set 4 due 11:59 PM \(8%\)) Tj
+T*
+(Dec 10, 2026 - Final exam 9:00 AM, Gates 214 \(35%\)) Tj
+T*
+0 -6 Td
+T*
+(Weekly readings) Tj
+T*
+(Sep 8, 2026 - Read CLRS Chapter 2) Tj
+T*
+(Sep 15, 2026 - Read CLRS Chapter 4) Tj
+T*
+0 -6 Td
+T*
+(Participation and remaining percent are not listed as dated items.) Tj
+T*
+(Do not invent extra due dates. Contact Dr. Chen before an exam conflict.) Tj
+ET
+endstream
+endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+6 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj
+7 0 obj << /Title (CS 301 Algorithms) /Creator (Termwise) >> endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000268 00000 n 
+0000001520 00000 n 
+0000001590 00000 n 
+0000001665 00000 n 
+trailer << /Size 8 /Root 1 0 R /Info 7 0 R >>
+startxref
+1733
+%%EOF

@@ -13,7 +13,7 @@ npm run dev -- --port 43127
 
 Open [http://localhost:43127](http://localhost:43127).
 
-1. **Add syllabus** or **Load demo semester**
+1. **Add syllabus** or **Load demo semester**. Demo PDFs for Grok live in `public/samples/` (also a zip of all four).
 2. Review the extraction table (course, kind, when, hours, weight and location if the syllabus listed them)
 3. Edit or skip rows. Suggested study blocks stay off until you keep them. **Add to calendar**. Nothing is written before this.
 4. Confirmed items land on the color-coded Termwise semester calendar, including weekly office hours. Click an event for professor, office hours, late-policy notes, and pileup flags.

@@ -580,6 +580,18 @@ export function SyllabotWorkspace() {
                     <button type="button" onClick={() => ingestText(paste)} disabled={!paste.trim()} className="sb-btn disabled:opacity-40">Extract pasted text</button>
                     <button type="button" onClick={loadDemo} className="sb-btn-ghost">Load demo semester</button>
                   </div>
+                  <p className="mt-4 text-[11px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">Demo PDFs for Grok</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {[
+                      ["CS 301", "/samples/CS301-Algorithms.pdf"],
+                      ["ECON 210", "/samples/ECON210-Microeconomics.pdf"],
+                      ["PHIL 160", "/samples/PHIL160-Ethics.pdf"],
+                      ["DES 220", "/samples/DES220-Interaction-Design.pdf"],
+                      ["All four (zip)", "/samples/termwise-demo-syllabi.zip"],
+                    ].map(([label, href]) => (
+                      <a key={href} href={href} download className="sb-btn-ghost h-8 text-xs">{label}</a>
+                    ))}
+                  </div>
                   {processing && <p className="mt-4 text-xs font-semibold text-[var(--sb-muted)]">Reading your syllabi…</p>}
                   {uploadError && <div className="mt-4 rounded-lg bg-[var(--sb-soft)] px-3 py-2.5 text-xs font-semibold text-[var(--sb-warn)]">{uploadError}</div>}
                 </>

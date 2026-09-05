@@ -1,10 +1,11 @@
-DES 220 — Interaction Design
+DES 220 - Interaction Design
 Professor: Prof. Davis (davis@university.edu)
 Office hours: Friday 2:00-3:30 PM, Studio B
+Late policy: Studio critiques cannot be late; project work loses a letter step per day.
 
 Project milestones
-Sep 9, 2026 — Studio critique
-Sep 23, 2026 — Research memo due 6:00 PM
-Oct 13, 2026 — Interaction design project due 11:59 PM
-Nov 11, 2026 — Usability report due 11:59 PM
-Dec 4, 2026 — Final portfolio due 11:59 PM
+Sep 9, 2026 - Studio critique, Studio B
+Sep 23, 2026 - Research memo due 6:00 PM (10%)
+Oct 13, 2026 - Interaction design project due 11:59 PM (30%)
+Nov 11, 2026 - Usability report due 11:59 PM (20%)
+Dec 4, 2026 - Final portfolio due 11:59 PM, Studio B (25%)
