@@ -6,7 +6,7 @@ user-invocable: true
 
 # weekly-brief
 
-Routine schedule: every Sunday at 8:00 PM in the student's local timezone.
+Deadliner routine. Schedule: every Sunday at 8:00 PM in the student's local timezone.
 
 ## Note must include
 

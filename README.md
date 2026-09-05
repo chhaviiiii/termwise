@@ -1,6 +1,6 @@
-# Syllabot
+# Deadliner
 
-A working academic desk for the Student Build Challenge. Drop in syllabi, confirm what you see, catch 48-hour pileups, and draft extension emails. Syllabot never sends them.
+A working academic desk for the Student Build Challenge. Drop in syllabi, confirm what you see, catch 48-hour pileups, and draft extension emails. Deadliner never sends them.
 
 The same identity, skills, and Sunday 8pm note live in the Grok Bot template so others can install it with their own Calendar and Gmail.
 
@@ -16,14 +16,16 @@ Open [http://localhost:43127](http://localhost:43127).
 1. **Add syllabus** or **Load demo semester**
 2. Review the extraction table
 3. **Add to calendar**. Nothing is written before this.
-4. Confirmed items land on the color-coded Syllabot semester calendar, including weekly office hours
+4. Confirmed items land on the color-coded Deadliner semester calendar, including weekly office hours
 5. **Add all to Google Calendar** downloads a reminder-ready `.ics` (Apple/Outlook open it), copies a subscribe link, and opens one Google “From URL” tab. Exams and projects can also be added one click at a time. Nothing is written without your click.
 6. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
-7. Review the extension draft. Syllabot will not send it.
+7. Review the extension draft. Deadliner will not send it.
 
 Paste text or upload a text-based PDF. Open **Customize** to change theme, accent color, course colors, density, and which overview widgets show, and in what order. Settings stay in the browser.
 
 ## Grok Bot template
+
+Deadliner is also a Grok Bot. In Grok: New → Create new agent → name it Deadliner, then paste identity, skills, and the Sunday routine. Full steps are in `template/GROK_BOT.md`.
 
 Shareable files (no secrets, no student data):
 
@@ -35,7 +37,7 @@ Shareable files (no secrets, no student data):
 | `template/04-check-collisions.md` | Skill |
 | `template/05-weekly-brief.md` | Sunday 8pm routine |
 | `template/06-draft-extension-request.md` | Skill |
-| `template/syllabot.template.json` | Portable bundle |
+| `template/deadliner.template.json` | Portable bundle |
 | `.grok/skills/*/SKILL.md` | Installable skills |
 
 Setup steps are in `template/GROK_BOT.md` and in the app’s **Templates** view (copy buttons included).

@@ -7,7 +7,7 @@ argument-hint: "[syllabus PDF or pasted text]"
 
 # extract-syllabus
 
-Use when the student uploads or pastes a syllabus.
+Deadliner skill. Use when the student uploads or pastes a syllabus.
 
 ## Steps
 

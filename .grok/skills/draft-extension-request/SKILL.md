@@ -6,7 +6,7 @@ user-invocable: true
 
 # draft-extension-request
 
-Use when the student asks, or when check-collisions finds 3+ major items in 48 hours.
+Deadliner skill. Use when the student asks, or when check-collisions finds 3+ major items in 48 hours.
 
 ## Draft rules
 

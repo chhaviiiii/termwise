@@ -6,7 +6,7 @@ user-invocable: true
 
 # check-collisions
 
-Run immediately after extract-syllabus events are confirmed.
+Deadliner skill. Run immediately after extract-syllabus events are confirmed.
 
 ## Rules
 

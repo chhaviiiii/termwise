@@ -34,7 +34,7 @@ export function AppearancePanel({
         <header className="flex items-center justify-between border-b border-[var(--sb-line)] px-5 py-4">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--sb-muted)]">Workspace</p>
-            <h2 className="mt-1 text-lg font-semibold">Customize Syllabot</h2>
+            <h2 className="mt-1 text-lg font-semibold">Customize Deadliner</h2>
           </div>
           <button onClick={onClose} className="grid size-8 place-items-center rounded-full border border-[var(--sb-line)]" aria-label="Close"><X className="size-4" /></button>
         </header>

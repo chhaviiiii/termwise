@@ -52,7 +52,7 @@ export function formatBriefEmail(memory: StudentMemory, brief: WeeklyBrief, coll
     ? collisions.map((collision) => `- ${collision.severity === "severe" ? "SEVERE" : "Watch"}: ${collision.events.map((event) => event.courseCode).join(", ")} on ${collision.start} to ${collision.end}`).join("\n")
     : "- No 48-hour pileups in the next two weeks.";
 
-  return `Subject: Syllabot week-ahead (${brief.weekLabel})
+  return `Subject: Deadliner week-ahead (${brief.weekLabel})
 
 Hi ${memory.studentName.split(" ")[0]},
 
@@ -67,5 +67,5 @@ ${collisionLines}
 One thing to start early:
 ${brief.startEarly ? `- ${brief.startEarly.title}: ${brief.startEarly.reason}` : "- Keep the lighter week and get ahead on readings."}
 
-Syllabot`;
+Deadliner`;
 }

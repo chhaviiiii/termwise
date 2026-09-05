@@ -37,7 +37,7 @@ import {
   DRAFT_EXTENSION_SKILL,
   EXTRACT_SYLLABUS_SKILL,
   GROK_SETUP_STEPS,
-  SYLLABOT_IDENTITY,
+  DEADLINER_IDENTITY,
   WEEKLY_BRIEF_ROUTINE,
 } from "@/lib/syllabot/templates";
 import { SemesterCalendar } from "@/components/semester-calendar";
@@ -95,7 +95,7 @@ export function SyllabotWorkspace() {
   };
   const [pending, setPending] = useState<{ events: AcademicEvent[]; courses: StudentMemory["courses"] } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", role: "bot", text: "I'm Syllabot. Drop a syllabus, paste text, or load the demo. I'll gather the deadlines and wait for you before anything goes on the calendar. I'll flag pileups and draft emails. I never send them." },
+    { id: "welcome", role: "bot", text: "I'm Deadliner. Drop a syllabus, paste text, or load the demo. I'll gather the deadlines and wait for you before anything goes on the calendar. I'll flag pileups and draft emails. I never send them." },
   ]);
   const [draft, setDraft] = useState<ExtensionDraft | null>(null);
   const [composer, setComposer] = useState("");
@@ -196,12 +196,12 @@ export function SyllabotWorkspace() {
     say("user", "Add these events to my calendar.");
     if (found.length) {
       const top = found.find((item) => item.severity === "severe") ?? found[0];
-      say("bot", `Added ${incoming.length} items to your Syllabot calendar, including office hours. ${found.length} collision${found.length === 1 ? "" : "s"}: ${top.events.map((event) => event.courseCode).join(", ")} on ${formatDate(top.start)} to ${formatDate(top.end)}.`);
+      say("bot", `Added ${incoming.length} items to your Deadliner calendar, including office hours. ${found.length} collision${found.length === 1 ? "" : "s"}: ${top.events.map((event) => event.courseCode).join(", ")} on ${formatDate(top.start)} to ${formatDate(top.end)}.`);
       if (top.severity === "severe") setDraft(draftExtensionRequest(next, top));
     } else {
-      say("bot", `Added ${incoming.length} items to your Syllabot calendar. No 48-hour pileups.`);
+      say("bot", `Added ${incoming.length} items to your Deadliner calendar. No 48-hour pileups.`);
     }
-    notify(`${incoming.length} events are on your Syllabot calendar.`);
+    notify(`${incoming.length} events are on your Deadliner calendar.`);
     void publishCalendar(next);
   }
 
@@ -227,7 +227,7 @@ export function SyllabotWorkspace() {
       notify("Add a syllabus first.");
       return;
     }
-    downloadIcs("syllabot-semester.ics", eventsToIcs(memory.events, memory.courses));
+    downloadIcs("deadliner-semester.ics", eventsToIcs(memory.events, memory.courses));
     notify("Calendar file downloaded. Apple Calendar and Outlook will open it.");
   }
 
@@ -246,7 +246,7 @@ export function SyllabotWorkspace() {
       notify("Add a syllabus first.");
       return;
     }
-    downloadIcs("syllabot-semester.ics", eventsToIcs(memory.events, memory.courses));
+    downloadIcs("deadliner-semester.ics", eventsToIcs(memory.events, memory.courses));
     const published = publishInfo ?? await publishCalendar();
     if (published?.icsUrl) {
       void navigator.clipboard.writeText(published.icsUrl);
@@ -299,7 +299,7 @@ export function SyllabotWorkspace() {
       if (!memory.events.length) return say("bot", "Confirm a syllabus first, then I can put it on the calendar.");
       setView("calendar");
       setShowAddCalendar(true);
-      return say("bot", "Your semester is on the Syllabot calendar. Use Add all to Google Calendar when you want exams and projects over there too.");
+      return say("bot", "Your semester is on the Deadliner calendar. Use Add all to Google Calendar when you want exams and projects over there too.");
     }
     if (lower.includes("confirm") && pending) return confirmCalendar();
     if (/\b(due|exam|midterm|professor|office hours|assignment|project)\b/i.test(text) && findDateHint(text)) {
@@ -320,9 +320,12 @@ export function SyllabotWorkspace() {
   return (
     <main className="syllabot-shell" data-theme={appearance.theme} data-density={appearance.density} style={{ ["--sb-accent" as string]: appearance.accent }}>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col border-r border-[var(--sb-line)] bg-[var(--sb-bg)] px-4 py-6 lg:flex">
-        <div className="px-2">
-          <p className="text-lg font-semibold tracking-tight">Syllabot</p>
-          <p className="mt-1 text-xs text-[var(--sb-muted)]">Semester desk</p>
+        <div className="flex items-center gap-2.5 px-2">
+          <BrandMark size={32} />
+          <div>
+            <p className="text-lg font-semibold tracking-tight">Deadliner</p>
+            <p className="text-xs text-[var(--sb-muted)]">Semester desk</p>
+          </div>
         </div>
         <nav className="mt-8 space-y-0.5">
           <NavItem icon={<LayoutDashboard />} label="Overview" active={view === "overview"} onClick={() => setView("overview")} />
@@ -353,7 +356,10 @@ export function SyllabotWorkspace() {
 
       <section className="pb-24 lg:pb-0 lg:pl-[220px]">
         <header className="sticky top-0 z-40 flex h-14 items-center border-b border-[var(--sb-line)] bg-[var(--sb-bg)]/90 px-5 backdrop-blur md:px-8">
-          <p className="text-sm font-medium lg:hidden">Syllabot</p>
+          <div className="flex items-center gap-2 lg:hidden">
+            <BrandMark size={28} />
+            <p className="text-sm font-medium">Deadliner</p>
+          </div>
           <p className="hidden text-sm text-[var(--sb-muted)] sm:block lg:ml-0">{firstName} · I&apos;ll keep the desk tidy</p>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={() => setShowSettings(true)} className="sb-btn-ghost h-9" type="button"><Settings className="size-3.5" /> <span className="hidden sm:inline">Customize</span></button>
@@ -464,9 +470,9 @@ export function SyllabotWorkspace() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <Badge className="mb-2 bg-[#e8f7f1] text-[#16856b]">{memory.events.length} EVENTS ON SYLLABOT</Badge>
+                  <Badge className="mb-2 bg-[#e8f7f1] text-[#16856b]">{memory.events.length} EVENTS ON DEADLINER</Badge>
                   <h2 className="text-2xl font-semibold tracking-tight">Put them on your own calendar</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">They&apos;re already on the Syllabot calendar, color-coded by course. Google stays untouched until you click. Download the .ics, or open Google Calendar and paste the subscribe link.</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">They&apos;re already on the Deadliner calendar, color-coded by course. Google stays untouched until you click. Download the .ics, or open Google Calendar and paste the subscribe link.</p>
                 </div>
                 <button onClick={() => setShowAddCalendar(false)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
               </div>
@@ -518,7 +524,7 @@ export function SyllabotWorkspace() {
               <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[#e3e6e0] p-4 font-sans text-sm leading-7 text-[#46534f]">{draft.body}</pre>
               <div className="mt-5 flex justify-end gap-2">
                 <button onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="sb-btn-ghost"><Copy className="size-4" /> Copy</button>
-                <button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Syllabot did not send it."); }} className="sb-btn"><Send className="size-4" /> Review in email</button>
+                <button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Deadliner did not send it."); }} className="sb-btn"><Send className="size-4" /> Review in email</button>
               </div>
             </CardContent>
           </Card>
@@ -694,7 +700,7 @@ function ChatPanel({ messages, composer, setComposer, onSend, onDemo, onCalendar
       <div className="flex-1 space-y-4 overflow-y-auto p-5">
         {messages.map((message) => (
           <div key={message.id} className={`max-w-[80%] py-1 text-sm leading-6 ${message.role === "user" ? "ml-auto text-right" : ""}`}>
-            <p className="mb-1 text-[11px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">{message.role === "user" ? "You" : "Syllabot"}</p>
+            <p className="mb-1 text-[11px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">{message.role === "user" ? "You" : "Deadliner"}</p>
             <pre className="whitespace-pre-wrap font-sans">{message.text}</pre>
           </div>
         ))}
@@ -758,7 +764,7 @@ function BriefPanel({ memory, brief, collisions, onSchedule }: { memory: Student
 
 function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
   const blocks = [
-    { title: "1. Identity", body: SYLLABOT_IDENTITY },
+    { title: "1. Identity", body: DEADLINER_IDENTITY },
     { title: "2. Connect plugins", body: CONNECT_PLUGINS },
     { title: "3. extract-syllabus", body: EXTRACT_SYLLABUS_SKILL },
     { title: "4. check-collisions", body: CHECK_COLLISIONS_SKILL },
@@ -782,6 +788,16 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
         </div>
       ))}
     </div>
+  );
+}
+
+function BrandMark({ size = 32 }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width={size} height={size} className="shrink-0" role="img" aria-label="Deadliner">
+      <circle cx="32" cy="32" r="32" fill="#C45C26" />
+      <path fill="#F7F1E8" fillRule="evenodd" d="M20 11h14c13.2 0 22 9.1 22 21s-8.8 21-22 21H20V11Zm9 8v26h5c8.4 0 13.5-5.8 13.5-13S42.4 19 34 19h-5Z" />
+      <path fill="none" stroke="#C45C26" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" d="M23.2 33.1 27 37l8.6-9.8" />
+    </svg>
   );
 }
 

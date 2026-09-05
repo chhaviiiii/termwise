@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Deadliner">
+  <circle cx="32" cy="32" r="32" fill="#C45C26"/>
+  <path fill="#F7F1E8" fill-rule="evenodd" d="M20 11h14c13.2 0 22 9.1 22 21s-8.8 21-22 21H20V11Zm9 8v26h5c8.4 0 13.5-5.8 13.5-13S42.4 19 34 19h-5Z"/>
+  <path fill="none" stroke="#C45C26" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" d="M23.2 33.1 27 37l8.6-9.8"/>
+</svg>
