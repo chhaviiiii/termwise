@@ -1,10 +1,27 @@
-DES 220 — Interaction Design
+DES 220 - Interaction Design
+Fall 2026  |  Design
 Professor: Prof. Davis (davis@university.edu)
 Office hours: Friday 2:00-3:30 PM, Studio B
+Late policy: Studio critiques cannot be late; project work loses a letter step per day.
 
-Project milestones
-Sep 9, 2026 — Studio critique
-Sep 23, 2026 — Research memo due 6:00 PM
-Oct 13, 2026 — Interaction design project due 11:59 PM
-Nov 11, 2026 — Usability report due 11:59 PM
-Dec 4, 2026 — Final portfolio due 11:59 PM
+Studio course. Research, prototype, test, and ship a small interaction.
+Critiques are in person. The October project is a major deadline and
+often collides with midterms in other classes.
+
+Studio days
+Sep 9, 2026 - Critique 1, Studio B
+Sep 30, 2026 - Critique 2, Studio B
+Oct 21, 2026 - Critique 3, Studio B
+Nov 4, 2026 - Critique 4, Studio B
+Dec 2, 2026 - Critique 5, Studio B
+
+Deliverables
+Sep 4, 2026 - Sketch assignment due 6:00 PM (5%)
+Sep 16, 2026 - Interview notes due 6:00 PM (5%)
+Sep 23, 2026 - Research memo due 6:00 PM (10%)
+Oct 7, 2026 - Prototype checkpoint due 6:00 PM (10%)
+Oct 13, 2026 - Interaction design project due 11:59 PM (25%)
+Oct 28, 2026 - Protocol memo due 6:00 PM (5%)
+Nov 11, 2026 - Usability report due 11:59 PM (15%)
+Nov 18, 2026 - Revision memo due 6:00 PM (5%)
+Dec 4, 2026 - Final portfolio due 11:59 PM, Studio B (20%)

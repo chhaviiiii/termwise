@@ -25,7 +25,7 @@ import {
   draftExtensionRequest,
   eventBelongsToCourse,
   eventsToIcs,
-  expandOfficeHours,
+  withOfficeHours,
   extractFromText,
   findCollisions,
   formatBriefEmail,
@@ -36,7 +36,6 @@ import {
   mergeUniqueEvents,
   removeCourseFromMemory,
   reviewMailHref,
-  semesterBounds,
   suggestStudyBlocks,
   type AcademicEvent,
   type CalendarDestination,
@@ -179,13 +178,15 @@ export function SyllabotWorkspace() {
   }
 
   function ingest(courses: StudentMemory["courses"], events: AcademicEvent[], source: string) {
-    const reviewed = annotateEventReviews(events, memory.events);
+    const withHours = withOfficeHours(courses, events);
+    const reviewed = annotateEventReviews(withHours, memory.events);
     const suggestions = suggestStudyBlocks(reviewed).filter((block) => !memory.events.some((event) => event.id === block.id));
+    const officeHours = reviewed.filter((event) => event.kind === "office-hour").length;
     const skipped = suggestions.map((block) => block.id);
     setPending({ courses, events: [...reviewed, ...suggestions], skipped });
     setShowUpload(true);
     const changed = reviewed.filter((event) => event.review === "changed").length;
-    say("bot", `${source}: ${reviewed.length} dated item${reviewed.length === 1 ? "" : "s"} across ${courses.length} course${courses.length === 1 ? "" : "s"}${suggestions.length ? `, plus ${suggestions.length} suggested study block${suggestions.length === 1 ? "" : "s"}` : ""}${changed ? `, ${changed} changed` : ""}. Edit or skip rows, then confirm.`);
+    say("bot", `${source}: ${reviewed.length} dated item${reviewed.length === 1 ? "" : "s"} across ${courses.length} course${courses.length === 1 ? "" : "s"}${officeHours ? `, including weekly office hours` : ""}${suggestions.length ? `, plus ${suggestions.length} suggested study block${suggestions.length === 1 ? "" : "s"}` : ""}${changed ? `, ${changed} changed` : ""}. Edit or skip rows. Office hours stay on. Then confirm.`);
   }
 
   function loadDemo() {
@@ -265,13 +266,12 @@ export function SyllabotWorkspace() {
         courses.push({ ...course });
       }
     }
-    const kept = pending.events.filter((event) => !pending.skipped.includes(event.id));
+    const kept = pending.events.filter((event) => event.kind === "office-hour" || !pending.skipped.includes(event.id));
     if (!kept.length) {
       notify("Keep at least one row, or go back.");
       return;
     }
-    const bounds = semesterBounds(kept);
-    const incoming = mergeUniqueEvents(kept, expandOfficeHours(courses, bounds.from, bounds.to));
+    const incoming = withOfficeHours(courses, kept);
     const next: StudentMemory = {
       ...memory,
       courses,
@@ -580,6 +580,18 @@ export function SyllabotWorkspace() {
                     <button type="button" onClick={() => ingestText(paste)} disabled={!paste.trim()} className="sb-btn disabled:opacity-40">Extract pasted text</button>
                     <button type="button" onClick={loadDemo} className="sb-btn-ghost">Load demo semester</button>
                   </div>
+                  <p className="mt-4 text-[11px] uppercase tracking-[0.12em] text-[var(--sb-muted)]">Demo PDFs for Grok</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {[
+                      ["CS 301", "/samples/CS301-Algorithms.pdf"],
+                      ["ECON 210", "/samples/ECON210-Microeconomics.pdf"],
+                      ["PHIL 160", "/samples/PHIL160-Ethics.pdf"],
+                      ["DES 220", "/samples/DES220-Interaction-Design.pdf"],
+                      ["All four (zip)", "/samples/termwise-demo-syllabi.zip"],
+                    ].map(([label, href]) => (
+                      <a key={href} href={href} download className="sb-btn-ghost h-8 text-xs">{label}</a>
+                    ))}
+                  </div>
                   {processing && <p className="mt-4 text-xs font-semibold text-[var(--sb-muted)]">Reading your syllabi…</p>}
                   {uploadError && <div className="mt-4 rounded-lg bg-[var(--sb-soft)] px-3 py-2.5 text-xs font-semibold text-[var(--sb-warn)]">{uploadError}</div>}
                 </>
@@ -593,6 +605,8 @@ export function SyllabotWorkspace() {
                       onChange={(id, patch) => setPending((current) => current ? { ...current, events: current.events.map((event) => event.id === id ? { ...event, ...patch } : event) } : current)}
                       onToggle={(id) => setPending((current) => {
                         if (!current) return current;
+                        const event = current.events.find((item) => item.id === id);
+                        if (event?.kind === "office-hour") return current;
                         const skipped = current.skipped.includes(id)
                           ? current.skipped.filter((item) => item !== id)
                           : [...current.skipped, id];
