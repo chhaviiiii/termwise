@@ -8,11 +8,11 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { events?: AcademicEvent[]; courses?: Course[] };
+    const body = (await request.json()) as { events?: AcademicEvent[]; courses?: Course[]; timeZone?: string };
     if (!Array.isArray(body.events) || !body.events.length) {
       return NextResponse.json({ error: "No events to publish." }, { status: 400 });
     }
-    const id = publishCalendarIcs(eventsToIcs(body.events, body.courses ?? []));
+    const id = publishCalendarIcs(eventsToIcs(body.events, body.courses ?? [], body.timeZone || "America/Los_Angeles"));
     const url = new URL(request.url);
     const host = (request.headers.get("x-forwarded-host") || request.headers.get("host") || url.host).replace(/^0\.0\.0\.0/, "127.0.0.1");
     const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "") || "http";

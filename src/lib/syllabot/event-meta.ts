@@ -8,6 +8,7 @@ export function displayKind(event: Pick<AcademicEvent, "kind" | "title">) {
     if (/\bquiz\b/i.test(event.title)) return "Quiz";
     return "Exam";
   }
+  if (event.kind === "study") return "Study";
   if (event.kind === "reading") return "Reading";
   if (/\b(paper|essay)\b/i.test(event.title)) return "Paper";
   if (/\bproject\b/i.test(event.title)) return "Project";

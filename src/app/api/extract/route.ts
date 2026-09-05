@@ -44,6 +44,11 @@ export async function POST(request: Request) {
         const parser = new PDFParse({ data: new Uint8Array(await file.arrayBuffer()) });
         const parsed = await parser.getText();
         await parser.destroy();
+        if ((parsed.text ?? "").replace(/\s+/g, " ").trim().length < 80) {
+          return NextResponse.json({
+            error: `${file.name} looks like a scan or image PDF. Termwise needs selectable text — export a text-based PDF or paste the syllabus.`,
+          }, { status: 422 });
+        }
         results.push(extractFromText(parsed.text, file.name, results.length + index));
       }
 

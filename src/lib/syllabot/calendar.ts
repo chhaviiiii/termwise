@@ -16,9 +16,10 @@ const WEEKDAY: Record<string, Day> = {
 const KIND_RANK: Record<AcademicEvent["kind"], number> = {
   exam: 0,
   assignment: 1,
-  deadline: 2,
-  reading: 3,
-  "office-hour": 4,
+  study: 2,
+  deadline: 3,
+  reading: 4,
+  "office-hour": 5,
 };
 
 export function parseClock(time: string, fallbackHour = 23, fallbackMinute = 59) {
@@ -40,6 +41,7 @@ export function eventStart(event: AcademicEvent) {
 export function eventEnd(event: AcademicEvent) {
   const start = eventStart(event);
   if (event.kind === "exam") return addMinutes(start, 110);
+  if (event.kind === "study") return addMinutes(start, Math.max(45, Math.round(event.estimatedHours * 60)));
   if (event.kind === "office-hour") return addMinutes(start, Math.max(30, Math.round(event.estimatedHours * 60)));
   if (event.time.includes("11:59")) return addMinutes(start, 15);
   return addMinutes(start, Math.max(45, event.estimatedHours * 20));
@@ -59,12 +61,12 @@ function escapeText(value: string) {
 
 function alarmTrigger(event: AcademicEvent) {
   if (event.kind === "exam") return "-P3D";
-  if (event.kind === "assignment") return "-P1D";
+  if (event.kind === "assignment" || event.kind === "study") return "-P1D";
   if (event.kind === "reading") return "-PT4H";
   return "-PT1H";
 }
 
-export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
+export function eventsToIcs(events: AcademicEvent[], courses: Course[], timeZone = "America/Los_Angeles") {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -72,7 +74,7 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "X-WR-CALNAME:Termwise semester",
-    "X-WR-TIMEZONE:America/Los_Angeles",
+    `X-WR-TIMEZONE:${timeZone}`,
   ];
 
   for (const event of events) {
@@ -82,8 +84,8 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
       "BEGIN:VEVENT",
       `UID:${event.id}@termwise`,
       `DTSTAMP:${utcStamp(new Date())}`,
-      `DTSTART;TZID=America/Los_Angeles:${compact(eventStart(event))}`,
-      `DTEND;TZID=America/Los_Angeles:${compact(eventEnd(event))}`,
+      `DTSTART;TZID=${timeZone}:${compact(eventStart(event))}`,
+      `DTEND;TZID=${timeZone}:${compact(eventEnd(event))}`,
       `SUMMARY:${escapeText(`${event.courseCode} - ${event.title}`)}`,
       `DESCRIPTION:${escapeText(eventDescription(event, course))}`,
       `CATEGORIES:${escapeText(`${event.courseCode},${event.kind}`)}`,
@@ -105,13 +107,13 @@ export function eventsToIcs(events: AcademicEvent[], courses: Course[]) {
   return lines.join("\r\n");
 }
 
-export function googleCalendarUrl(event: AcademicEvent, course?: Course) {
+export function googleCalendarUrl(event: AcademicEvent, course?: Course, timeZone = "America/Los_Angeles") {
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: `${event.courseCode} - ${event.title}`,
     dates: `${compact(eventStart(event))}/${compact(eventEnd(event))}`,
     details: eventDescription(event, course),
-    ctz: "America/Los_Angeles",
+    ctz: timeZone,
   });
   if (event.location) params.set("location", event.location);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -130,9 +132,9 @@ export function outlookCalendarUrl(event: AcademicEvent, course?: Course) {
   return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
 }
 
-export function calendarComposeUrl(event: AcademicEvent, destination: CalendarDestination, course?: Course) {
+export function calendarComposeUrl(event: AcademicEvent, destination: CalendarDestination, course?: Course, timeZone = "America/Los_Angeles") {
   if (destination === "outlook") return outlookCalendarUrl(event, course);
-  return googleCalendarUrl(event, course);
+  return googleCalendarUrl(event, course, timeZone);
 }
 
 export function outlookSubscribeUrl(icsUrl: string, name = "Termwise semester") {

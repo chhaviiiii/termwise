@@ -13,6 +13,9 @@ import {
   DEFAULT_MEMORY,
   DESTINATIONS,
   DESTINATION_RECONNECT_NOTE,
+  annotateEventReviews,
+  buildStudyTonight,
+  buildTermLoad,
   buildTermProgress,
   buildWeeklyBrief,
   collisionForEvent,
@@ -26,12 +29,14 @@ import {
   findCollisions,
   formatBriefEmail,
   formatEventWhen,
+  formatStudyTonight,
   mailtoHref,
   mergeExtractions,
   mergeUniqueEvents,
   removeCourseFromMemory,
   reviewMailHref,
   semesterBounds,
+  suggestStudyBlocks,
   type AcademicEvent,
   type CalendarDestination,
   type Collision,
@@ -46,6 +51,7 @@ import {
   DRAFT_EXTENSION_SKILL,
   EXTRACT_SYLLABUS_SKILL,
   GROK_SETUP_STEPS,
+  STUDY_TONIGHT_SKILL,
   TERMWISE_IDENTITY,
   TERMWISE_LISTING,
   WEEKLY_BRIEF_ROUTINE,
@@ -54,6 +60,8 @@ import { SemesterCalendar } from "@/components/semester-calendar";
 import { AppearancePanel } from "@/components/appearance-panel";
 import { AddCalendarPanel, type PublishInfo } from "@/components/add-calendar-panel";
 import { DestinationChoice } from "@/components/destination-choice";
+import { ConfirmTable } from "@/components/confirm-table";
+import { LoadStrip } from "@/components/load-strip";
 import {
   DEFAULT_APPEARANCE,
   getAppearance,
@@ -129,7 +137,7 @@ export function SyllabotWorkspace() {
   const setMemory = (update: StudentMemory | ((current: StudentMemory) => StudentMemory)) => {
     writeMemory(typeof update === "function" ? update(memoryCache) : update);
   };
-  const [pending, setPending] = useState<{ events: AcademicEvent[]; courses: StudentMemory["courses"] } | null>(null);
+  const [pending, setPending] = useState<{ events: AcademicEvent[]; courses: StudentMemory["courses"]; skipped: string[] } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "welcome", role: "bot", text: "I'm Termwise. Drop a syllabus, paste text, or load the demo. I'll gather the dates and wait before anything goes on the calendar. When you're ready, pick Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback: .ics download / mailto draft. I'll flag pileups, write the week brief, and draft emails. I never send them." },
   ]);
@@ -170,9 +178,13 @@ export function SyllabotWorkspace() {
   }
 
   function ingest(courses: StudentMemory["courses"], events: AcademicEvent[], source: string) {
-    setPending({ courses, events });
+    const reviewed = annotateEventReviews(events, memory.events);
+    const suggestions = suggestStudyBlocks(reviewed).filter((block) => !memory.events.some((event) => event.id === block.id));
+    const skipped = suggestions.map((block) => block.id);
+    setPending({ courses, events: [...reviewed, ...suggestions], skipped });
     setShowUpload(true);
-    say("bot", `${source}: ${events.length} dated item${events.length === 1 ? "" : "s"} across ${courses.length} course${courses.length === 1 ? "" : "s"}. Look over the table, then confirm when you're ready.`);
+    const changed = reviewed.filter((event) => event.review === "changed").length;
+    say("bot", `${source}: ${reviewed.length} dated item${reviewed.length === 1 ? "" : "s"} across ${courses.length} course${courses.length === 1 ? "" : "s"}${suggestions.length ? `, plus ${suggestions.length} suggested study block${suggestions.length === 1 ? "" : "s"}` : ""}${changed ? `, ${changed} changed` : ""}. Edit or skip rows, then confirm.`);
   }
 
   function loadDemo() {
@@ -252,8 +264,13 @@ export function SyllabotWorkspace() {
         courses.push({ ...course });
       }
     }
-    const bounds = semesterBounds(pending.events);
-    const incoming = mergeUniqueEvents(pending.events, expandOfficeHours(courses, bounds.from, bounds.to));
+    const kept = pending.events.filter((event) => !pending.skipped.includes(event.id));
+    if (!kept.length) {
+      notify("Keep at least one row, or go back.");
+      return;
+    }
+    const bounds = semesterBounds(kept);
+    const incoming = mergeUniqueEvents(kept, expandOfficeHours(courses, bounds.from, bounds.to));
     const next: StudentMemory = {
       ...memory,
       courses,
@@ -283,7 +300,7 @@ export function SyllabotWorkspace() {
       const response = await fetch("/api/calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ events: source.events, courses: source.courses }),
+        body: JSON.stringify({ events: source.events, courses: source.courses, timeZone: appearance.timeZone }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -299,10 +316,10 @@ export function SyllabotWorkspace() {
       notify("Add a syllabus first.");
       return;
     }
-    downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
+    downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses, appearance.timeZone));
     notify(destination === "file"
       ? "Calendar file downloaded. Import the .ics in any calendar app."
-      : `Calendar file downloaded. ${chosen.calendarLabel}, Apple Calendar, and Outlook will open it.`);
+      : `Calendar file downloaded for ${appearance.timeZone}.`);
   }
 
   function copySubscribeLink(url?: string) {
@@ -322,7 +339,7 @@ export function SyllabotWorkspace() {
       notify("Add a syllabus first.");
       return;
     }
-    downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
+    downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses, appearance.timeZone));
     if (destination === "file") {
       notify("Calendar file downloaded. Import it in any calendar app. Termwise did not write anything.");
       return;
@@ -331,11 +348,23 @@ export function SyllabotWorkspace() {
     if (published?.icsUrl) {
       void navigator.clipboard.writeText(published.icsUrl);
     }
+    if (destination === "apple") {
+      if (published?.webcalUrl) window.open(published.webcalUrl, "_blank", "noopener,noreferrer");
+      notify("Downloaded the semester .ics for Apple Calendar. Open the file or the subscribe link if asked.");
+      return;
+    }
     const openUrl = destination === "outlook"
       ? published?.outlookSubscribe ?? published?.outlookImport ?? "https://outlook.live.com/calendar/0/addfromweb"
       : published?.googleImport ?? "https://calendar.google.com/calendar/u/0/r/settings/addbyurl";
     window.open(openUrl, "_blank", "noopener,noreferrer");
     notify(`Downloaded the semester .ics and opened ${chosen.calendarLabel}. Paste the copied subscribe link if asked.`);
+  }
+
+  function runTonight() {
+    const items = buildStudyTonight(memory);
+    say("user", "Study tonight.");
+    say("bot", formatStudyTonight(memory, items));
+    setView("chat");
   }
 
   function runBrief() {
@@ -368,6 +397,7 @@ export function SyllabotWorkspace() {
       setView("collisions");
       return say("bot", collisions.map((item) => `${item.severity}: ${item.events.map((event) => event.courseCode).join(", ")} ${item.start} to ${item.end}`).join("\n"));
     }
+    if (lower.includes("tonight") || lower.includes("study tonight")) return runTonight();
     if (lower.includes("brief") || lower.includes("sunday")) return runBrief();
     if (lower.includes("extension") || lower.includes("draft") || lower === "send it") {
       if (lower === "send it" && draft) {
@@ -490,6 +520,7 @@ export function SyllabotWorkspace() {
               onCalendar={() => setView("calendar")}
               onDraft={() => { if (severe) runDraft(severe); }}
               onBrief={runBrief}
+              onTonight={runTonight}
               onCustomize={() => setShowSettings(true)}
               onRemoveCourse={requestRemoveCourse}
             />
@@ -541,7 +572,7 @@ export function SyllabotWorkspace() {
                   <button disabled={processing} onClick={() => fileRef.current?.click()} onDrop={(event) => { event.preventDefault(); processFiles(Array.from(event.dataTransfer.files)); }} onDragOver={(event) => event.preventDefault()} className="mt-5 grid w-full place-items-center rounded-2xl border-2 border-dashed border-[var(--sb-line)] bg-[var(--sb-bg)] px-5 py-8 text-center hover:border-[var(--sb-ink)]/40 disabled:opacity-60">
                     <UploadCloud className="size-6 text-[var(--sb-muted)]" />
                     <p className="mt-3 text-sm font-semibold">Drop PDF or .txt syllabi</p>
-                    <p className="mt-1 text-xs text-[var(--sb-muted)]">or click to browse · up to 10 files</p>
+                    <p className="mt-1 text-xs text-[var(--sb-muted)]">or click to browse · up to 10 files · text-based PDF, not a scan</p>
                   </button>
                   <textarea value={paste} onChange={(event) => setPaste(event.target.value)} placeholder="Or paste a syllabus here…" className="mt-4 min-h-28 w-full rounded-xl border border-[var(--sb-line)] bg-[var(--sb-bg)] p-3 text-sm outline-none" />
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -553,47 +584,22 @@ export function SyllabotWorkspace() {
                 </>
               ) : (
                 <>
-                  <div className="mt-5 overflow-x-auto rounded-xl border border-[var(--sb-line)]">
-                    <table className="w-full min-w-[640px] text-left text-xs">
-                      <thead className="bg-[var(--sb-soft)] text-[var(--sb-muted)]">
-                        <tr>
-                          <th className="px-3 py-2 font-medium">Course</th>
-                          <th className="px-3 py-2 font-medium">Item</th>
-                          <th className="px-3 py-2 font-medium">Kind</th>
-                          <th className="px-3 py-2 font-medium">When</th>
-                          <th className="px-3 py-2 font-medium">Hours</th>
-                          <th className="px-3 py-2 font-medium">Weight</th>
-                          <th className="px-3 py-2 font-medium">Location</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pending.events.map((event) => (
-                          <tr key={event.id} className="border-t border-[var(--sb-line)]">
-                            <td className="px-3 py-2 font-semibold">{event.courseCode}</td>
-                            <td className="px-3 py-2">{event.title}</td>
-                            <td className="px-3 py-2">{displayKind(event)}</td>
-                            <td className="px-3 py-2">{formatDate(event.date)} {event.time}</td>
-                            <td className="px-3 py-2">{event.estimatedHours}h</td>
-                            <td className="px-3 py-2">{event.weight || "—"}</td>
-                            <td className="px-3 py-2">{event.location || "—"}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="mt-5">
+                    <ConfirmTable
+                      events={pending.events}
+                      courses={pending.courses}
+                      skipped={pending.skipped}
+                      onChange={(id, patch) => setPending((current) => current ? { ...current, events: current.events.map((event) => event.id === id ? { ...event, ...patch } : event) } : current)}
+                      onToggle={(id) => setPending((current) => {
+                        if (!current) return current;
+                        const skipped = current.skipped.includes(id)
+                          ? current.skipped.filter((item) => item !== id)
+                          : [...current.skipped, id];
+                        return { ...current, skipped };
+                      })}
+                    />
                   </div>
-                  {pending.courses.some((course) => course.latePolicy || (course.professor && course.professor !== "Professor")) && (
-                    <div className="mt-3 space-y-1 text-[11px] text-[var(--sb-muted)]">
-                      {pending.courses.map((course) => (
-                        <p key={course.id}>
-                          <span className="font-semibold text-[var(--sb-ink)]">{course.code}</span>
-                          {course.professor && course.professor !== "Professor" ? ` · ${course.professor}` : ""}
-                          {course.officeHours ? ` · OH ${course.officeHours}` : ""}
-                          {course.latePolicy ? ` · Late: ${course.latePolicy}` : ""}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                  <p className="mt-3 text-[11px] leading-5 text-[var(--sb-muted)]">Weights, locations, and late notes appear only when the syllabus listed them. After confirm, pick Google, Outlook, or Fallback — Termwise never writes the calendar for you.</p>
+                  <p className="mt-3 text-[11px] leading-5 text-[var(--sb-muted)]">Edit a wrong date or skip a row. Suggested study blocks are off until you keep them — they are derived from listed hours, not new due dates. After confirm, pick Google, Outlook, Apple, or Fallback. Termwise never writes the calendar for you.</p>
                   <div className="mt-5 flex justify-end gap-2">
                     <button type="button" onClick={() => setPending(null)} className="sb-btn-ghost">Back</button>
                     <button type="button" onClick={confirmCalendar} className="sb-btn"><CalendarDays className="size-4" /> Add to calendar</button>
@@ -720,7 +726,7 @@ function findDateHint(text: string) {
   return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{1,2}\/\d{1,2})\b/i.test(text);
 }
 
-function Overview({ memory, appearance, brief, term, collisions, weekEvents, completed, setCompleted, onDemo, onUpload, onCollision, onCalendar, onDraft, onBrief, onCustomize, onRemoveCourse }: {
+function Overview({ memory, appearance, brief, term, collisions, weekEvents, completed, setCompleted, onDemo, onUpload, onCollision, onCalendar, onDraft, onBrief, onTonight, onCustomize, onRemoveCourse }: {
   memory: StudentMemory;
   appearance: Appearance;
   brief: ReturnType<typeof buildWeeklyBrief>;
@@ -735,6 +741,7 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
   onCalendar: () => void;
   onDraft: () => void;
   onBrief: () => void;
+  onTonight: () => void;
   onCustomize: () => void;
   onRemoveCourse: (course: Course) => void;
 }) {
@@ -755,7 +762,7 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
           {[
             ["1", "Extract", "PDF or paste. I wait for you."],
             ["2", "Calendar", "Google, Outlook, or Fallback."],
-            ["3", "This week", "Load, pileups, Sunday brief."],
+            ["3", "This week", "Load, study blocks, Sunday brief."],
             ["4", "Draft", "An extension email. Never sent."],
           ].map(([step, title, body]) => (
             <li key={step} className="sb-card flex gap-3 p-4">
@@ -849,8 +856,14 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
         <h2 className="mt-2 text-lg font-semibold">Week ahead</h2>
         <p className="mt-1 text-sm text-[var(--sb-muted)]">{brief.weekLabel} · {brief.totalHours}h of {brief.capacityHours}h</p>
         <Progress value={Math.min(100, (brief.totalHours / Math.max(brief.capacityHours, 1)) * 100)} className="mt-4 h-1 bg-[var(--sb-soft)] [&>div]:bg-[var(--sb-accent)]" />
-        <button onClick={onBrief} className="sb-btn-ghost mt-4 w-full">Open brief</button>
+        <div className="mt-4 flex gap-2">
+          <button onClick={onBrief} className="sb-btn-ghost flex-1">Open brief</button>
+          <button onClick={onTonight} className="sb-btn-ghost flex-1">Tonight</button>
+        </div>
       </div>
+    ),
+    load: (
+      <LoadStrip weeks={buildTermLoad(memory.events, memory.weeklyCapacityHours)} />
     ),
     courses: (
       <div className="sb-card p-5">
@@ -903,7 +916,7 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
       </div>
       <div className={`grid gap-4 ${appearance.density === "compact" ? "md:grid-cols-2" : "md:grid-cols-2"}`}>
         {appearance.widgets.filter((widget) => widget.visible && widgets[widget.id]).map((widget) => (
-          <div key={widget.id} className={widget.id === "due" || widget.id === "collision" || widget.id === "term" ? "md:col-span-2" : ""}>
+          <div key={widget.id} className={widget.id === "due" || widget.id === "collision" || widget.id === "term" || widget.id === "load" ? "md:col-span-2" : ""}>
             {widgets[widget.id]}
           </div>
         ))}
@@ -929,6 +942,7 @@ function ChatPanel({ messages, composer, setComposer, onSend, onDemo, onCalendar
           <button onClick={onCalendar} className="sb-btn-ghost h-8">Add to calendar</button>
           <button onClick={() => setComposer("check collisions")} className="sb-btn-ghost h-8">Collisions</button>
           <button onClick={() => setComposer("weekly brief")} className="sb-btn-ghost h-8">Brief</button>
+          <button onClick={() => setComposer("study tonight")} className="sb-btn-ghost h-8">Tonight</button>
         </div>
         <div className="flex gap-2">
           <input value={composer} onChange={(event) => setComposer(event.target.value)} onKeyDown={(event) => event.key === "Enter" && onSend()} placeholder="Ask, or paste a dated syllabus line…" className="h-10 flex-1 rounded-lg border border-[var(--sb-line)] bg-[var(--sb-bg)] px-3 text-sm outline-none" />
@@ -1001,6 +1015,7 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
     { title: "4. check-collisions", body: CHECK_COLLISIONS_SKILL },
     { title: "5. weekly-brief", body: WEEKLY_BRIEF_ROUTINE },
     { title: "6. draft-extension-request", body: DRAFT_EXTENSION_SKILL },
+    { title: "7. study-tonight", body: STUDY_TONIGHT_SKILL },
   ];
   return (
     <div className="space-y-4">

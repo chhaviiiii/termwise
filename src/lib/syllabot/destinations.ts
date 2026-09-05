@@ -1,4 +1,4 @@
-export type CalendarDestination = "google" | "outlook" | "file";
+export type CalendarDestination = "google" | "outlook" | "apple" | "file";
 
 export type DestinationInfo = {
   id: CalendarDestination;
@@ -38,6 +38,18 @@ export const DESTINATIONS: Record<CalendarDestination, DestinationInfo> = {
     fileHint: "Or download the .ics and open it in Outlook. Apple Calendar opens the same file.",
     reviewMailLabel: "Review in Outlook",
   },
+  apple: {
+    id: "apple",
+    calendarLabel: "Apple Calendar",
+    mailLabel: "mailto draft",
+    pairLabel: "Apple Calendar / mailto",
+    shortLabel: "Apple",
+    addAllLabel: "Add to Apple Calendar",
+    addOneLabel: "Download .ics",
+    subscribeHint: "Download the .ics, or copy the subscribe link and add it in Apple Calendar → File → New Calendar Subscription.",
+    fileHint: "Apple Calendar opens .ics files. No account is connected from Termwise.",
+    reviewMailLabel: "Open mailto draft",
+  },
   file: {
     id: "file",
     calendarLabel: "Fallback",
@@ -56,5 +68,5 @@ export const DESTINATION_RECONNECT_NOTE =
   "Grok Bot recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. They pick; they do not inherit logins.";
 
 export function isDestination(value: unknown): value is CalendarDestination {
-  return value === "google" || value === "outlook" || value === "file";
+  return value === "google" || value === "outlook" || value === "apple" || value === "file";
 }

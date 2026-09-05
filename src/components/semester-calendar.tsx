@@ -37,7 +37,7 @@ function matchesFilter(event: AcademicEvent, filter: Filter) {
   if (filter === "all") return true;
   if (filter === "exam") return event.kind === "exam";
   if (filter === "office-hour") return event.kind === "office-hour";
-  return event.kind === "assignment" || event.kind === "deadline" || event.kind === "reading";
+  return event.kind === "assignment" || event.kind === "deadline" || event.kind === "reading" || event.kind === "study";
 }
 
 export function SemesterCalendar({

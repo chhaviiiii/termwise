@@ -12,7 +12,7 @@ export function DestinationChoice({
   compact?: boolean;
 }) {
   return (
-    <div role="group" aria-label="Google, Outlook, or Fallback destination" className={`grid gap-2 ${compact ? "grid-cols-3" : "sm:grid-cols-3"}`}>
+    <div role="group" aria-label="Calendar and mail destination" className={`grid gap-2 ${compact ? "grid-cols-2" : "sm:grid-cols-2"}`}>
       {(Object.values(DESTINATIONS) as typeof DESTINATIONS[CalendarDestination][]).map((option) => {
         const active = value === option.id;
         return (

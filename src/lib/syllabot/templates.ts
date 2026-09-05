@@ -75,10 +75,17 @@ Prefer asking about the most flexible item (project/paper), not an exam.
 Keep the tone short, factual, and specific about the colliding dates.
 Open the draft in Gmail, Outlook mail, or a mailto fallback — whichever I chose.`;
 
+export const STUDY_TONIGHT_SKILL = `Skill: study-tonight
+When I ask what to work on tonight, look at confirmed items due
+in the next few days and any suggested study blocks I kept.
+List a short checklist with course, item, and why it is tonight.
+Do not invent new due dates. Show the list first. Do not write
+the calendar unless I confirm.`;
+
 export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwise"
 2. Bot actions → Edit Profile → name Termwise, title and description from the Listing block (template/termwise.template.json), then paste template/01-identity.md
 3. In chat, paste template/02-connect-plugins.md
-4. Save each skill from .grok/skills/*/SKILL.md (or template/03-06)
+4. Save each skill from .grok/skills/*/SKILL.md (or template/03-07)
 5. Ask: "Every Sunday at 8pm, run weekly-brief."
 6. Share the Bot as a template (strip any personal emails first)
 Recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. Until plugins work, use Fallback: .ics download / mailto draft.`;

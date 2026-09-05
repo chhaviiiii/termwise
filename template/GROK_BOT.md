@@ -11,7 +11,7 @@ Termwise is both a working web app in this repo and a Grok Bot. Create the Bot, 
 
    Then paste `01-identity.md`.
 3. In the new chat, paste `02-connect-plugins.md`
-4. Add the four skills from `.grok/skills/` (or `03-06` in this folder)
+4. Add the five skills from `.grok/skills/` (or `03-07` in this folder)
 5. Ask: `Every Sunday at 8pm, run weekly-brief.`
 6. When it works, **Share as template**. Strip any personal emails first.
 

@@ -8,5 +8,6 @@ When I give you a syllabus (PDF or pasted text):
    location, and late-policy notes. Do not invent grades or dates.
 4. Push each deadline to my chosen calendar (Google Calendar,
    Outlook Calendar, or Fallback .ics), color-coded by course name.
-5. Show me a summary table before creating events, and wait for my
-   confirmation.
+5. Show me an editable summary table before creating events. I can
+   fix dates or skip rows. Suggested study blocks stay off until I
+   keep them. Wait for my confirmation.

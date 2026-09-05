@@ -1,4 +1,5 @@
-export type EventKind = "exam" | "assignment" | "reading" | "office-hour" | "deadline";
+export type EventKind = "exam" | "assignment" | "reading" | "office-hour" | "deadline" | "study";
+export type EventReview = "new" | "changed" | "same";
 export type CollisionSeverity = "watch" | "severe";
 
 export type Course = {
@@ -26,6 +27,8 @@ export type AcademicEvent = {
   location?: string;
   weight?: string;
   notes?: string;
+  suggested?: boolean;
+  review?: EventReview;
 };
 
 export type Collision = {

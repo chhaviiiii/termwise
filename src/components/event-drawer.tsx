@@ -70,7 +70,7 @@ export function EventDrawer({
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          {destination === "file" ? (
+          {destination === "file" || destination === "apple" ? (
             <button
               type="button"
               className="sb-btn h-9"
@@ -87,7 +87,7 @@ export function EventDrawer({
               <ExternalLink className="size-3.5" /> {chosen.addOneLabel}
             </button>
           )}
-          {destination !== "file" && (
+          {destination !== "file" && destination !== "apple" && (
             <button
               type="button"
               className="sb-btn-ghost h-9"
@@ -98,7 +98,7 @@ export function EventDrawer({
           )}
         </div>
         <p className="mt-2 text-[11px] leading-4 text-[var(--sb-muted)]">
-          {destination === "file" ? "Downloads a file. Termwise does not write the calendar for you." : "Opens a compose tab. Termwise does not write the calendar for you."}
+          {destination === "file" || destination === "apple" ? "Downloads a file. Termwise does not write the calendar for you." : "Opens a compose tab. Termwise does not write the calendar for you."}
         </p>
       </div>
 

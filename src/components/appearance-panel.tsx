@@ -10,7 +10,7 @@ import {
   type Appearance,
   type WidgetId,
 } from "@/lib/syllabot/appearance";
-import { DESTINATION_RECONNECT_NOTE, type Course } from "@/lib/syllabot";
+import { DESTINATION_RECONNECT_NOTE, TIMEZONES, type Course } from "@/lib/syllabot";
 
 export function AppearancePanel({
   appearance,
@@ -100,6 +100,18 @@ export function AppearancePanel({
               />
             </div>
             <p className="mt-2 text-[11px] leading-5 text-[var(--sb-muted)]">{DESTINATION_RECONNECT_NOTE}</p>
+            <label className="mt-3 block text-xs text-[var(--sb-muted)]">
+              Timezone
+              <select
+                value={appearance.timeZone}
+                onChange={(event) => writeAppearance((current) => ({ ...current, timeZone: event.target.value as typeof appearance.timeZone }))}
+                className="mt-1 h-10 w-full rounded-lg border border-[var(--sb-line)] bg-[var(--sb-bg)] px-3 text-sm text-[var(--sb-ink)] outline-none"
+              >
+                {TIMEZONES.map((zone) => (
+                  <option key={zone.id} value={zone.id}>{zone.label}</option>
+                ))}
+              </select>
+            </label>
           </section>
 
           <section>

@@ -1,7 +1,8 @@
 import { isDestination, type CalendarDestination } from "./destinations";
+import { isTimeZone, type TimeZoneId } from "./timezones";
 
 export type ThemeId = "paper" | "concrete" | "olive" | "night";
-export type WidgetId = "term" | "collision" | "due" | "brief" | "courses";
+export type WidgetId = "term" | "collision" | "due" | "brief" | "courses" | "load";
 
 export type WidgetPref = { id: WidgetId; label: string; visible: boolean };
 
@@ -10,6 +11,7 @@ export type Appearance = {
   accent: string;
   density: "comfortable" | "compact";
   destination: CalendarDestination;
+  timeZone: TimeZoneId;
   widgets: WidgetPref[];
   courseColors: Record<string, string>;
 };
@@ -28,6 +30,7 @@ export const DEFAULT_WIDGETS: WidgetPref[] = [
   { id: "collision", label: "Pileups", visible: true },
   { id: "due", label: "Due this week", visible: true },
   { id: "brief", label: "Sunday brief", visible: true },
+  { id: "load", label: "Week load", visible: true },
   { id: "courses", label: "Courses", visible: true },
 ];
 
@@ -36,6 +39,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   accent: "#b42318",
   density: "comfortable",
   destination: "google",
+  timeZone: "America/Los_Angeles",
   widgets: DEFAULT_WIDGETS,
   courseColors: {},
 };
@@ -54,6 +58,7 @@ function normalize(value: Partial<Appearance> | null): Appearance {
     ...DEFAULT_APPEARANCE,
     ...value,
     destination: isDestination(value?.destination) ? value.destination : DEFAULT_APPEARANCE.destination,
+    timeZone: isTimeZone(value?.timeZone) ? value.timeZone : DEFAULT_APPEARANCE.timeZone,
     widgets,
     courseColors: value?.courseColors ?? {},
   };
