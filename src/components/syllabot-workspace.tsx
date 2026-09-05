@@ -7,7 +7,6 @@ import {
   Send, Settings, UploadCloud, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -477,7 +476,7 @@ export function SyllabotWorkspace() {
                 {publishInfo?.icsUrl && (
                   <div className="flex items-center gap-2 rounded-xl border border-[#dfe3dd] px-4 py-3">
                     <code className="min-w-0 flex-1 truncate text-xs text-[#3d4b47]">{publishInfo.icsUrl}</code>
-                    <Button variant="outline" className="h-8 rounded-lg text-xs font-bold" onClick={() => copySubscribeLink()}><Copy className="size-3.5" /> Copy</Button>
+                    <button className="sb-btn-ghost h-8" onClick={() => copySubscribeLink()}><Copy className="size-3.5" /> Copy</button>
                   </div>
                 )}
               </div>
@@ -490,14 +489,14 @@ export function SyllabotWorkspace() {
                         <p className="truncate text-sm font-bold">{event.courseCode} · {event.title}</p>
                         <p className="text-[11px] text-[#7c8683]">{formatDate(event.date)} {event.time}</p>
                       </div>
-                      <Button variant="outline" className="h-8 rounded-lg text-xs font-bold" onClick={() => window.open(googleCalendarUrl(event), "_blank", "noopener,noreferrer")}>Add to Google</Button>
+                      <button className="sb-btn-ghost h-8" onClick={() => window.open(googleCalendarUrl(event), "_blank", "noopener,noreferrer")}>Add to Google</button>
                     </div>
                   ))}
                 </div>
               )}
               <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
-                <Button variant="outline" onClick={() => { exportCalendar(); setShowAddCalendar(false); }} className="rounded-lg"><Download className="size-4" /> Download .ics</Button>
-                <Button onClick={() => void addAllToGoogle()} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><CalendarDays className="size-4" /> Add all to Google Calendar</Button>
+                <button onClick={() => { exportCalendar(); setShowAddCalendar(false); }} className="sb-btn-ghost"><Download className="size-4" /> Download .ics</button>
+                <button onClick={() => void addAllToGoogle()} className="sb-btn"><CalendarDays className="size-4" /> Add all to Google Calendar</button>
               </div>
             </CardContent>
           </Card>
@@ -509,7 +508,7 @@ export function SyllabotWorkspace() {
           <Card className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border-0 bg-white py-0 shadow-2xl">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
-                <div><Badge className="mb-2 bg-[#fff0ec] text-[#c44d38]">DRAFT · NOT SENT</Badge><h2 className="font-serif text-2xl font-bold">Extension request</h2></div>
+                <div><p className="mb-1 text-xs uppercase tracking-[0.14em] text-[var(--sb-warn)]">Draft · not sent</p><h2 className="text-2xl font-semibold tracking-tight">Extension request</h2></div>
                 <button onClick={() => setDraft(null)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]"><X className="size-4" /></button>
               </div>
               <div className="mt-5 space-y-3 rounded-xl border border-[#e3e6e0] bg-[#fbfbf8] p-4 text-sm">
@@ -518,8 +517,8 @@ export function SyllabotWorkspace() {
               </div>
               <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[#e3e6e0] p-4 font-sans text-sm leading-7 text-[#46534f]">{draft.body}</pre>
               <div className="mt-5 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="rounded-lg"><Copy className="size-4" /> Copy</Button>
-                <Button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Syllabot did not send it."); }} className="rounded-lg bg-[#193c38] text-white hover:bg-[#112d2a]"><Send className="size-4" /> Review in email</Button>
+                <button onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="sb-btn-ghost"><Copy className="size-4" /> Copy</button>
+                <button onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Syllabot did not send it."); }} className="sb-btn"><Send className="size-4" /> Review in email</button>
               </div>
             </CardContent>
           </Card>

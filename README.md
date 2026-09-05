@@ -21,7 +21,7 @@ Open [http://localhost:43127](http://localhost:43127).
 6. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
 7. Review the extension draft. Syllabot will not send it.
 
-Paste text or upload a text-based PDF. Weekly capacity is remembered in the sidebar.
+Paste text or upload a text-based PDF. Open **Customize** to change theme, accent color, course colors, density, and which overview widgets show — and in what order. Settings stay in the browser.
 
 ## Grok Bot template
 
