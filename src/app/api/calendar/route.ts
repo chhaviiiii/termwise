@@ -13,8 +13,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No events to publish." }, { status: 400 });
     }
     const id = publishCalendarIcs(eventsToIcs(body.events, body.courses ?? []));
-    const origin = new URL(request.url).origin;
-    const icsUrl = `${origin}/api/calendar/${id}`;
+    const url = new URL(request.url);
+    const host = (request.headers.get("x-forwarded-host") || request.headers.get("host") || url.host).replace(/^0\.0\.0\.0/, "127.0.0.1");
+    const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "") || "http";
+    const icsUrl = `${proto}://${host}/api/calendar/${id}`;
     const webcalUrl = icsUrl.replace(/^https?:/, "webcal:");
     return NextResponse.json({
       id,
