@@ -92,6 +92,15 @@ export function writeAppearance(next: Appearance | ((current: Appearance) => App
   listeners.forEach((listener) => listener());
 }
 
+export function removeCourseColor(courseId: string) {
+  writeAppearance((current) => {
+    if (!(courseId in current.courseColors)) return current;
+    const courseColors = { ...current.courseColors };
+    delete courseColors[courseId];
+    return { ...current, courseColors };
+  });
+}
+
 export function moveWidget(widgets: WidgetPref[], id: WidgetId, direction: -1 | 1) {
   const index = widgets.findIndex((widget) => widget.id === id);
   const nextIndex = index + direction;

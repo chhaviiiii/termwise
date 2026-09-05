@@ -18,6 +18,7 @@ export function AppearancePanel({
   weeklyCapacityHours,
   onName,
   onCapacity,
+  onRemoveCourse,
   onClose,
 }: {
   appearance: Appearance;
@@ -26,6 +27,7 @@ export function AppearancePanel({
   weeklyCapacityHours: number;
   onName: (value: string) => void;
   onCapacity: (value: number) => void;
+  onRemoveCourse: (course: Course) => void;
   onClose: () => void;
 }) {
   return (
@@ -126,21 +128,32 @@ export function AppearancePanel({
 
           {courses.length > 0 && (
             <section>
-              <h3 className="text-sm font-semibold">Course colors</h3>
+              <h3 className="text-sm font-semibold">Classes</h3>
+              <p className="mt-1 text-xs text-[var(--sb-muted)]">Recolor a class, or take it off the desk.</p>
               <div className="mt-3 space-y-2">
                 {courses.map((course) => (
-                  <label key={course.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span>{course.code}</span>
-                    <input
-                      type="color"
-                      value={appearance.courseColors[course.id] ?? course.color}
-                      onChange={(event) => writeAppearance((current) => ({
-                        ...current,
-                        courseColors: { ...current.courseColors, [course.id]: event.target.value },
-                      }))}
-                      className="h-8 w-10 cursor-pointer rounded border border-[var(--sb-line)] bg-transparent"
-                    />
-                  </label>
+                  <div key={course.id} className="flex items-center justify-between gap-3 text-sm">
+                    <label className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                      <span className="truncate">{course.code}</span>
+                      <input
+                        type="color"
+                        value={appearance.courseColors[course.id] ?? course.color}
+                        onChange={(event) => writeAppearance((current) => ({
+                          ...current,
+                          courseColors: { ...current.courseColors, [course.id]: event.target.value },
+                        }))}
+                        className="h-8 w-10 cursor-pointer rounded border border-[var(--sb-line)] bg-transparent"
+                        aria-label={`${course.code} color`}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveCourse(course)}
+                      className="h-8 shrink-0 px-1 text-xs font-semibold text-[var(--sb-muted)] hover:text-[var(--sb-ink)]"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 ))}
               </div>
             </section>

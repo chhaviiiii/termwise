@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   AlertTriangle, CalendarDays, Check, CheckCircle2,
   Clock3, Copy, Download, FileText, LayoutDashboard, Mail, MessageSquare,
-  Send, Settings, UploadCloud, X,
+  Send, Settings, Trash2, UploadCloud, X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
   buildWeeklyBrief,
   downloadIcs,
   draftExtensionRequest,
+  eventBelongsToCourse,
   eventsToIcs,
   expandOfficeHours,
   extractFromText,
@@ -26,9 +27,11 @@ import {
   mergeExtractions,
   mergeUniqueEvents,
   priorityCalendarEvents,
+  removeCourseFromMemory,
   semesterBounds,
   type AcademicEvent,
   type Collision,
+  type Course,
   type ExtensionDraft,
   type StudentMemory,
   type TermProgress,
@@ -47,6 +50,7 @@ import { AppearancePanel } from "@/components/appearance-panel";
 import {
   DEFAULT_APPEARANCE,
   getAppearance,
+  removeCourseColor,
   subscribeAppearance,
   type Appearance,
 } from "@/lib/syllabot/appearance";
@@ -131,6 +135,7 @@ export function SyllabotWorkspace() {
   const [completed, setCompleted] = useState<string[]>([]);
   const [showAddCalendar, setShowAddCalendar] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [removing, setRemoving] = useState<Course | null>(null);
   const [publishInfo, setPublishInfo] = useState<{ icsUrl: string; googleSubscribe: string; googleImport: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -186,6 +191,31 @@ export function SyllabotWorkspace() {
     } finally {
       setProcessing(false);
     }
+  }
+
+  function requestRemoveCourse(course: Course) {
+    setRemoving(course);
+  }
+
+  function confirmRemoveCourse() {
+    if (!removing) return;
+    const course = removing;
+    const removedIds = new Set(memory.events.filter((event) => eventBelongsToCourse(event, course)).map((event) => event.id));
+    const next = removeCourseFromMemory(memory, course.id);
+    setMemory(next);
+    removeCourseColor(course.id);
+    setCompleted((current) => current.filter((id) => !removedIds.has(id)));
+    if (draft && draft.courseCode.toLowerCase() === course.code.toLowerCase()) setDraft(null);
+    setRemoving(null);
+    if (next.events.length) {
+      void publishCalendar(next);
+    } else {
+      setPublishInfo(null);
+    }
+    notify(next.courses.length ? `${course.code} is off the desk.` : `${course.code} is off the desk. Add a syllabus when you are ready.`);
+    say("bot", next.courses.length
+      ? `Removed ${course.code} and its dates. Your other classes are still here.`
+      : `Removed ${course.code}. The desk is empty again.`);
   }
 
   function confirmCalendar() {
@@ -371,9 +401,17 @@ export function SyllabotWorkspace() {
         <p className="mb-2 mt-8 px-2 text-[11px] uppercase tracking-[0.14em] text-[var(--sb-muted)]">Courses</p>
         <div className="space-y-1">
           {themedCourses.length ? themedCourses.map((course) => (
-            <div key={course.code} className="flex items-center gap-2 px-2 py-1.5 text-sm">
-              <span className="size-1.5 rounded-full" style={{ background: course.color }} />
-              <span className="truncate">{course.code}</span>
+            <div key={course.id} className="flex items-center gap-1 px-2 py-1 text-sm">
+              <span className="size-1.5 shrink-0 rounded-full" style={{ background: course.color }} />
+              <span className="min-w-0 flex-1 truncate">{course.code}</span>
+              <button
+                type="button"
+                onClick={() => requestRemoveCourse(course)}
+                className="grid size-7 shrink-0 place-items-center rounded-md text-[var(--sb-muted)] hover:bg-[var(--sb-soft)] hover:text-[var(--sb-ink)]"
+                aria-label={`Remove ${course.code}`}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
             </div>
           )) : <p className="px-2 text-xs text-[var(--sb-muted)]">None yet</p>}
         </div>
@@ -424,6 +462,7 @@ export function SyllabotWorkspace() {
               onDraft={() => { if (severe) runDraft(severe); }}
               onBrief={runBrief}
               onCustomize={() => setShowSettings(true)}
+              onRemoveCourse={requestRemoveCourse}
             />
           )}
           {view === "calendar" && (
@@ -577,6 +616,31 @@ export function SyllabotWorkspace() {
         <MobileNav icon={<FileText />} label="Template" active={view === "templates"} onClick={() => setView("templates")} />
       </nav>
 
+      {removing && (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-[#102523]/55 p-4 backdrop-blur-sm" onMouseDown={(event) => event.target === event.currentTarget && setRemoving(null)}>
+          <Card className="w-full max-w-md rounded-2xl border-0 bg-white py-0 shadow-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="mb-1 text-xs uppercase tracking-[0.14em] text-[var(--sb-warn)]">Remove class</p>
+                  <h2 className="text-2xl font-semibold tracking-tight">Take {removing.code} off the desk?</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-[#66736f]">
+                    {memory.courses.length === 1
+                      ? `This clears ${removing.code}, its deadlines, office hours, and color. The desk will be empty again.`
+                      : `This clears ${removing.code}, its deadlines, office hours, and color. Your other classes stay.`}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setRemoving(null)} className="grid size-8 place-items-center rounded-full bg-[#f3f4f0]" aria-label="Close"><X className="size-4" /></button>
+              </div>
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button type="button" onClick={() => setRemoving(null)} className="sb-btn-ghost">Keep it</button>
+                <button type="button" onClick={confirmRemoveCourse} className="sb-btn">Remove class</button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {showSettings && (
         <AppearancePanel
           appearance={appearance}
@@ -585,6 +649,7 @@ export function SyllabotWorkspace() {
           weeklyCapacityHours={memory.weeklyCapacityHours}
           onName={(value) => setMemory((current) => ({ ...current, studentName: value }))}
           onCapacity={(value) => setMemory((current) => ({ ...current, weeklyCapacityHours: value }))}
+          onRemoveCourse={requestRemoveCourse}
           onClose={() => setShowSettings(false)}
         />
       )}
@@ -602,7 +667,7 @@ function findDateHint(text: string) {
   return /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{1,2}\/\d{1,2})\b/i.test(text);
 }
 
-function Overview({ memory, appearance, brief, term, collisions, weekEvents, completed, setCompleted, onDemo, onUpload, onCollision, onCalendar, onDraft, onBrief, onCustomize }: {
+function Overview({ memory, appearance, brief, term, collisions, weekEvents, completed, setCompleted, onDemo, onUpload, onCollision, onCalendar, onDraft, onBrief, onCustomize, onRemoveCourse }: {
   memory: StudentMemory;
   appearance: Appearance;
   brief: ReturnType<typeof buildWeeklyBrief>;
@@ -618,6 +683,7 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
   onDraft: () => void;
   onBrief: () => void;
   onCustomize: () => void;
+  onRemoveCourse: (course: Course) => void;
 }) {
   if (!memory.events.length) {
     return (
@@ -730,23 +796,32 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
       <div className="sb-card p-5">
         <h2 className="mb-4 text-lg font-semibold">Courses</h2>
         <div className="space-y-3">
-          {memory.courses.map((course) => {
+          {memory.courses.length ? memory.courses.map((course) => {
             const upcoming = memory.events.filter((event) => event.courseId === course.id && event.kind !== "office-hour").length;
             const hit = collisions.some((collision) => collision.events.some((event) => event.courseCode === course.code));
             return (
               <div key={course.id} className="flex items-center gap-3">
-                <span className="size-2 rounded-full" style={{ background: course.color }} />
+                <span className="size-2 shrink-0 rounded-full" style={{ background: course.color }} />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{course.code}</p>
                   <p className="truncate text-xs text-[var(--sb-muted)]">{course.professor}</p>
+                  <p className="mt-0.5 text-xs text-[var(--sb-muted)] sm:hidden">{upcoming} items · {hit ? "In a collision" : "Clear"}</p>
                 </div>
-                <div className="text-right text-xs">
+                <div className="hidden text-right text-xs sm:block">
                   <p>{upcoming} items</p>
                   <p className="text-[var(--sb-muted)]">{hit ? "In a collision" : "Clear"}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => onRemoveCourse(course)}
+                  className="sb-btn-ghost h-8 shrink-0 px-2.5"
+                  aria-label={`Remove ${course.code}`}
+                >
+                  Remove
+                </button>
               </div>
             );
-          })}
+          }) : <p className="text-sm text-[var(--sb-muted)]">No classes on the desk.</p>}
         </div>
       </div>
     ),
