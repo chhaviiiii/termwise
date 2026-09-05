@@ -120,7 +120,7 @@ export function SemesterCalendar({
               {subscribeUrl && onCopySubscribe && (
                 <button type="button" className="sb-btn-ghost h-9" onClick={onCopySubscribe}><Copy className="size-3.5" /> Subscribe</button>
               )}
-              <button type="button" onClick={onAddAll} className="sb-btn h-9">Add to {chosen.shortLabel}</button>
+              <button type="button" onClick={onAddAll} className="sb-btn h-9">{destination === "file" ? chosen.addAllLabel : `Add to ${chosen.shortLabel}`}</button>
             </div>
           </div>
           <div className="mb-2 flex flex-wrap items-center gap-1.5">

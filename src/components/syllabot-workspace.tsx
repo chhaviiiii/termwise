@@ -52,6 +52,7 @@ import {
 import { SemesterCalendar } from "@/components/semester-calendar";
 import { AppearancePanel } from "@/components/appearance-panel";
 import { AddCalendarPanel, type PublishInfo } from "@/components/add-calendar-panel";
+import { DestinationChoice } from "@/components/destination-choice";
 import {
   DEFAULT_APPEARANCE,
   getAppearance,
@@ -129,9 +130,10 @@ export function SyllabotWorkspace() {
   };
   const [pending, setPending] = useState<{ events: AcademicEvent[]; courses: StudentMemory["courses"] } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "welcome", role: "bot", text: "I'm Termwise. Drop a syllabus, paste text, or load the demo. I'll gather the dates and wait before anything goes on the calendar. When you're ready, send them to Google Calendar / Gmail or Outlook Calendar / Outlook mail. I'll flag pileups, write the week brief, and draft emails. I never send them." },
+    { id: "welcome", role: "bot", text: "I'm Termwise. Drop a syllabus, paste text, or load the demo. I'll gather the dates and wait before anything goes on the calendar. When you're ready, pick Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback: .ics download / mailto draft. I'll flag pileups, write the week brief, and draft emails. I never send them." },
   ]);
   const [draft, setDraft] = useState<ExtensionDraft | null>(null);
+  const [queuedDraft, setQueuedDraft] = useState<ExtensionDraft | null>(null);
   const [composer, setComposer] = useState("");
   const [paste, setPaste] = useState("");
   const [showUpload, setShowUpload] = useState(false);
@@ -219,6 +221,7 @@ export function SyllabotWorkspace() {
     removeCourseColor(course.id);
     setCompleted((current) => current.filter((id) => !removedIds.has(id)));
     if (draft && draft.courseCode.toLowerCase() === course.code.toLowerCase()) setDraft(null);
+    if (queuedDraft && queuedDraft.courseCode.toLowerCase() === course.code.toLowerCase()) setQueuedDraft(null);
     setRemoving(null);
     if (next.events.length) {
       void publishCalendar(next);
@@ -265,7 +268,7 @@ export function SyllabotWorkspace() {
     if (found.length) {
       const top = found.find((item) => item.severity === "severe") ?? found[0];
       say("bot", `Added ${incoming.length} items to your Termwise calendar, including office hours. ${found.length} collision${found.length === 1 ? "" : "s"}: ${top.events.map((event) => event.courseCode).join(", ")} on ${formatDate(top.start)} to ${formatDate(top.end)}.`);
-      if (top.severity === "severe") setDraft(draftExtensionRequest(next, top));
+      if (top.severity === "severe") setQueuedDraft(draftExtensionRequest(next, top));
     } else {
       say("bot", `Added ${incoming.length} items to your Termwise calendar. No 48-hour pileups.`);
     }
@@ -296,7 +299,9 @@ export function SyllabotWorkspace() {
       return;
     }
     downloadIcs("termwise-semester.ics", eventsToIcs(memory.events, memory.courses));
-    notify(`Calendar file downloaded. ${chosen.calendarLabel}, Apple Calendar, and Outlook will open it.`);
+    notify(destination === "file"
+      ? "Calendar file downloaded. Import the .ics in any calendar app."
+      : `Calendar file downloaded. ${chosen.calendarLabel}, Apple Calendar, and Outlook will open it.`);
   }
 
   function copySubscribeLink(url?: string) {
@@ -306,7 +311,9 @@ export function SyllabotWorkspace() {
       return;
     }
     void navigator.clipboard.writeText(target);
-    notify(`Subscribe link copied. Paste it into ${chosen.calendarLabel}.`);
+    notify(destination === "file"
+      ? "Subscribe link copied. Paste it into any calendar that accepts a URL."
+      : `Subscribe link copied. Paste it into ${chosen.calendarLabel}.`);
   }
 
   async function addAllToDestination() {
@@ -374,7 +381,7 @@ export function SyllabotWorkspace() {
       if (!memory.events.length) return say("bot", "Confirm a syllabus first, then I can put it on the calendar.");
       setView("calendar");
       setShowAddCalendar(true);
-      return say("bot", `Your semester is on the Termwise calendar. Choose Google Calendar / Gmail, Outlook Calendar / Outlook mail, or a .ics / mailto fallback when you want the dates over there too. ${DESTINATION_RECONNECT_NOTE}`);
+      return say("bot", `Your semester is on the Termwise calendar. Choose Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback: .ics download / mailto draft when you want the dates over there too. ${DESTINATION_RECONNECT_NOTE}`);
     }
     if (lower.includes("confirm") && pending) return confirmCalendar();
     if (/\b(due|exam|midterm|professor|office hours|assignment|project)\b/i.test(text) && findDateHint(text)) {
@@ -500,7 +507,7 @@ export function SyllabotWorkspace() {
                   onDestination={setDestination}
                 />
               )
-              : <Empty title="Calendar is empty" body="Confirm a syllabus and I will lay out the deadlines, exams, readings, and office hours by course color. Then pick Google Calendar or Outlook Calendar — .ics, subscribe URL, or one-click compose. Nothing is written until you click." />
+              : <Empty title="Calendar is empty" body="Confirm a syllabus and I will lay out the deadlines, exams, readings, and office hours by course color. Then pick Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback: .ics download / mailto draft. Nothing is written until you click." />
           )}
           {view === "chat" && (
             <ChatPanel messages={messages} composer={composer} setComposer={setComposer} onSend={() => handlePrompt(composer)} onDemo={loadDemo} onCalendar={() => handlePrompt("add to calendar")} />
@@ -522,7 +529,7 @@ export function SyllabotWorkspace() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-2xl font-semibold tracking-tight">{pending ? "Does this look right?" : "Add your syllabi"}</h2>
-                  <p className="mt-1 text-sm text-[var(--sb-muted)]">{pending ? "Nothing is on the calendar yet. Confirm when you're ready — then you can send dates to Google Calendar or Outlook Calendar." : "Upload a PDF, paste text, or load the demo semester."}</p>
+                  <p className="mt-1 text-sm text-[var(--sb-muted)]">{pending ? "Nothing is on the calendar yet. Confirm when you're ready — then pick Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback." : "Upload a PDF, paste text, or load the demo semester."}</p>
                 </div>
                 <button type="button" onClick={() => setShowUpload(false)} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>
               </div>
@@ -585,7 +592,7 @@ export function SyllabotWorkspace() {
                       ))}
                     </div>
                   )}
-                  <p className="mt-3 text-[11px] leading-5 text-[var(--sb-muted)]">Weights, locations, and late notes appear only when the syllabus listed them. After confirm, pick Google or Outlook — Termwise never writes the calendar for you.</p>
+                  <p className="mt-3 text-[11px] leading-5 text-[var(--sb-muted)]">Weights, locations, and late notes appear only when the syllabus listed them. After confirm, pick Google, Outlook, or Fallback — Termwise never writes the calendar for you.</p>
                   <div className="mt-5 flex justify-end gap-2">
                     <button type="button" onClick={() => setPending(null)} className="sb-btn-ghost">Back</button>
                     <button type="button" onClick={confirmCalendar} className="sb-btn"><CalendarDays className="size-4" /> Add to calendar</button>
@@ -604,7 +611,13 @@ export function SyllabotWorkspace() {
           destination={destination}
           publishInfo={publishInfo}
           onDestination={setDestination}
-          onClose={() => setShowAddCalendar(false)}
+          onClose={() => {
+            setShowAddCalendar(false);
+            if (queuedDraft) {
+              setDraft(queuedDraft);
+              setQueuedDraft(null);
+            }
+          }}
           onDownload={() => { exportCalendar(); setShowAddCalendar(false); }}
           onCopySubscribe={() => copySubscribeLink()}
           onAddAll={() => void addAllToDestination()}
@@ -619,19 +632,28 @@ export function SyllabotWorkspace() {
                 <div>
                   <p className="mb-1 text-xs uppercase tracking-[0.14em] text-[var(--sb-warn)]">Draft · not sent</p>
                   <h2 className="text-2xl font-semibold tracking-tight">Extension request</h2>
-                  <p className="mt-1 text-xs text-[var(--sb-muted)]">Opens in {chosen.mailLabel}. Termwise never sends unless you do.</p>
+                  <p className="mt-1 text-xs text-[var(--sb-muted)]">
+                    {destination === "file"
+                      ? "Opens a mailto draft. Termwise never sends unless you do."
+                      : `Opens in ${chosen.mailLabel}. Termwise never sends unless you do.`}
+                  </p>
                 </div>
                 <button type="button" onClick={() => setDraft(null)} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>
+              </div>
+              <div className="mt-5">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--sb-muted)]">Destination</p>
+                <DestinationChoice value={destination} onChange={setDestination} />
               </div>
               <div className="mt-5 space-y-3 rounded-xl border border-[var(--sb-line)] bg-[var(--sb-bg)] p-4 text-sm">
                 <p><span className="mr-3 text-[var(--sb-muted)]">To</span> {draft.toName}{draft.toEmail ? ` <${draft.toEmail}>` : ""}</p>
                 <p className="border-t border-[var(--sb-line)] pt-3"><span className="mr-3 text-[var(--sb-muted)]">Subject</span> {draft.subject}</p>
               </div>
               <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-[var(--sb-line)] p-4 font-sans text-sm leading-7">{draft.body}</pre>
+              <p className="mt-3 text-[11px] leading-5 text-[var(--sb-muted)]">mailto is always available as a fallback. Termwise does not send mail.</p>
               <div className="mt-5 flex flex-wrap justify-end gap-2">
                 <button type="button" onClick={() => { navigator.clipboard.writeText(draft.body); notify("Draft copied. Still not sent."); }} className="sb-btn-ghost"><Copy className="size-4" /> Copy</button>
                 <button type="button" onClick={() => { window.location.href = mailtoHref(draft); notify("Opened your mail client. Termwise did not send it."); }} className="sb-btn-ghost">mailto</button>
-                <button type="button" onClick={() => { window.open(reviewMailHref(draft, destination), "_blank", "noopener,noreferrer"); notify(`Opened ${chosen.mailLabel}. Termwise did not send it.`); }} className="sb-btn"><Send className="size-4" /> {chosen.reviewMailLabel}</button>
+                <button type="button" onClick={() => { window.open(reviewMailHref(draft, destination), "_blank", "noopener,noreferrer"); notify(`Opened ${destination === "file" ? "a mailto draft" : chosen.mailLabel}. Termwise did not send it.`); }} className="sb-btn"><Send className="size-4" /> {chosen.reviewMailLabel}</button>
               </div>
             </CardContent>
           </Card>
@@ -726,12 +748,12 @@ function Overview({ memory, appearance, brief, term, collisions, weekEvents, com
           </div>
         </div>
         <p className="mt-5 max-w-xl text-[15px] leading-7 text-[var(--sb-ink)]">
-          Extract syllabi, confirm the dates, catch 48-hour pileups, read the week brief, and draft an extension if you need one. Send dates to Google Calendar / Gmail or Outlook Calendar / Outlook mail. Termwise never sends.
+          Extract syllabi, confirm the dates, catch 48-hour pileups, read the week brief, and draft an extension if you need one. Send dates to Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback: .ics download / mailto draft. Termwise never sends.
         </p>
         <ol className="mt-6 grid gap-3 sm:grid-cols-2">
           {[
             ["1", "Extract", "PDF or paste. I wait for you."],
-            ["2", "Calendar", "Google or Outlook, plus .ics."],
+            ["2", "Calendar", "Google, Outlook, or Fallback."],
             ["3", "This week", "Load, pileups, Sunday brief."],
             ["4", "Draft", "An extension email. Never sent."],
           ].map(([step, title, body]) => (
@@ -918,7 +940,7 @@ function ChatPanel({ messages, composer, setComposer, onSend, onDemo, onCalendar
 
 function CollisionsPanel({ memory, collisions, onDraft, onExport }: { memory: StudentMemory; collisions: Collision[]; onDraft: (collision: Collision) => void; onExport: () => void }) {
   if (!collisions.length) {
-    return <Empty title="No collisions yet" body="Confirm a syllabus and I will look for 48-hour pileups. Export still goes to the calendar destination you picked — Google or Outlook — as an .ics or subscribe link." />;
+    return <Empty title="No collisions yet" body="Confirm a syllabus and I will look for 48-hour pileups. Export still goes to the destination you picked — Google, Outlook, or Fallback — as an .ics or subscribe link." />;
   }
   return (
     <div className="space-y-3">
@@ -983,7 +1005,7 @@ function TemplatesPanel({ notify }: { notify: (message: string) => void }) {
       <div className="sb-card p-6">
         <h1 className="text-2xl font-semibold">Termwise Bot template</h1>
         <p className="mt-2 text-sm leading-6 text-[var(--sb-muted)]">
-          In Grok: New, Create new agent, name it Termwise. Recipients pick Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — they reconnect their own accounts and do not inherit logins. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.
+          In Grok: New, Create new agent, name it Termwise. Recipients pick Google Calendar / Gmail and/or Outlook Calendar / Outlook mail — they reconnect their own accounts and do not inherit logins. Until plugins work, use Fallback: .ics download / mailto draft. Copy these blocks, or use the files in <code className="rounded bg-[var(--sb-soft)] px-1">template/</code> and <code className="rounded bg-[var(--sb-soft)] px-1">.grok/skills/</code>.
         </p>
         <pre className="mt-4 whitespace-pre-wrap bg-[var(--sb-soft)] p-4 text-xs leading-6">{GROK_SETUP_STEPS}</pre>
       </div>

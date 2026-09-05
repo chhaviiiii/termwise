@@ -6,7 +6,7 @@ When I give you a syllabus (PDF or pasted text):
 2. Extract weekly readings if listed.
 3. Extract office hours, professor contact info, weight if listed,
    location, and late-policy notes. Do not invent grades or dates.
-4. Push each deadline to my chosen calendar (Google Calendar or
-   Outlook Calendar), color-coded by course name.
+4. Push each deadline to my chosen calendar (Google Calendar,
+   Outlook Calendar, or Fallback .ics), color-coded by course name.
 5. Show me a summary table before creating events, and wait for my
    confirmation.

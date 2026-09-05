@@ -19,10 +19,10 @@ export const CONNECT_PLUGINS = `Connect Google Calendar + Gmail and/or Outlook C
 
 I will reconnect whichever I use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. Do not expect to inherit someone else's logins.
 
-Until those plugins are connected, use Termwise fallbacks:
+Until those plugins are connected, use Termwise Fallback:
 - Show a confirmation table before creating events
-- Export an .ics file I can import to Google Calendar or Outlook Calendar
-- Open a mailto: draft I can review in Gmail or Outlook mail
+- Fallback: .ics download I can import to Google Calendar or Outlook Calendar
+- Fallback: mailto draft I can review in Gmail or Outlook mail
 Never send or write without my confirmation.`;
 
 export const EXTRACT_SYLLABUS_SKILL = `Skill: extract-syllabus
@@ -32,8 +32,8 @@ When I give you a syllabus (PDF or pasted text):
 2. Extract weekly readings if listed.
 3. Extract office hours, professor contact info, weight if listed,
    location, and late-policy notes. Do not invent grades or dates.
-4. Push each deadline to my chosen calendar (Google Calendar or
-   Outlook Calendar), color-coded by course name.
+4. Push each deadline to my chosen calendar (Google Calendar,
+   Outlook Calendar, or Fallback .ics), color-coded by course name.
 5. Show me a summary table before creating events, and wait for my
    confirmation.`;
 
@@ -54,7 +54,7 @@ Every Sunday at 8pm, send me a short note covering:
 
 Show the draft first unless I have auto-approved this routine.
 If Calendar/Gmail or Outlook are disconnected, post the note in this
-chat and offer a mailto: draft for Gmail or Outlook mail.`;
+chat and offer Fallback: mailto draft for Gmail or Outlook mail.`;
 
 export const DRAFT_EXTENSION_SKILL = `Skill: draft-extension-request
 If I ask, or if a collision is severe (3+ major items in 48 hours),
@@ -64,7 +64,7 @@ me the draft. Never send without my explicit "send it."
 
 Prefer asking about the most flexible item (project/paper), not an exam.
 Keep the tone short, factual, and specific about the colliding dates.
-Open the draft in Gmail or Outlook mail, whichever I chose.`;
+Open the draft in Gmail, Outlook mail, or a mailto fallback — whichever I chose.`;
 
 export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwise"
 2. Bot actions → Edit Profile → paste template/01-identity.md
@@ -72,4 +72,4 @@ export const GROK_SETUP_STEPS = `1. New → Create new agent → name it "Termwi
 4. Save each skill from .grok/skills/*/SKILL.md (or template/03-06)
 5. Ask: "Every Sunday at 8pm, run weekly-brief."
 6. Share the Bot as a template (strip any personal emails first)
-Recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail.`;
+Recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. Until plugins work, use Fallback: .ics download / mailto draft.`;

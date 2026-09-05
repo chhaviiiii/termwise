@@ -7,4 +7,4 @@ me the draft. Never send without my explicit "send it."
 
 Prefer asking about the most flexible item (project/paper), not an exam.
 Keep the tone short, factual, and specific about the colliding dates.
-Open the draft in Gmail or Outlook mail, whichever I chose.
+Open the draft in Gmail, Outlook mail, or a mailto fallback — whichever I chose.

@@ -7,4 +7,4 @@ Every Sunday at 8pm, send me a short note covering:
 
 Show the draft first unless I have auto-approved this routine.
 If Calendar/Gmail or Outlook are disconnected, post the note in this
-chat and offer a mailto: draft for Gmail or Outlook mail.
+chat and offer Fallback: mailto draft for Gmail or Outlook mail.

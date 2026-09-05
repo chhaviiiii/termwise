@@ -16,8 +16,8 @@ Termwise skill. Use when the student uploads or pastes a syllabus.
 3. Extract office hours, professor contact info, weight if listed, location, and late-policy notes. Do not invent grades or dates.
 4. Color-code events by course name.
 5. Show a summary table (course, item, kind, date, time, estimated hours, weight and location if listed).
-6. Wait for confirmation before creating calendar events on Google Calendar or Outlook Calendar.
+6. Wait for confirmation before creating calendar events on Google Calendar, Outlook Calendar, or Fallback .ics.
 
 ## Safety
 
-Never create calendar events until the student confirms the table. If Calendar is disconnected, offer an `.ics` download after confirmation for Google Calendar or Outlook Calendar.
+Never create calendar events until the student confirms the table. If Calendar is disconnected, offer Fallback: `.ics` download after confirmation.

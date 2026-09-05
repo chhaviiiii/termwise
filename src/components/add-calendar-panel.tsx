@@ -62,7 +62,7 @@ export function AddCalendarPanel({
               <Badge className="mb-2 bg-[var(--sb-soft)] text-[var(--sb-ink)]">{events.length} events on Termwise</Badge>
               <h2 className="text-2xl font-semibold tracking-tight">Where should they go?</h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--sb-muted)]">
-                They&apos;re on the Termwise calendar, color-coded by course. Pick Google, Outlook, or a file — nothing is connected until you click.
+                They&apos;re on the Termwise calendar, color-coded by course. Pick Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback — nothing is connected until you click.
               </p>
             </div>
             <button type="button" onClick={onClose} className="grid size-8 place-items-center rounded-full bg-[var(--sb-soft)]" aria-label="Close"><X className="size-4" /></button>

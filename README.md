@@ -17,9 +17,9 @@ Open [http://localhost:43127](http://localhost:43127).
 2. Review the extraction table (course, kind, when, hours, weight and location if the syllabus listed them)
 3. **Add to calendar**. Nothing is written before this.
 4. Confirmed items land on the color-coded Termwise semester calendar, including weekly office hours. Click an event for professor, office hours, late-policy notes, and pileup flags.
-5. **Add to Google** or **Add to Outlook** downloads a reminder-ready `.ics` (Apple Calendar opens it too), copies a subscribe link, and opens one From URL / Subscribe from web tab. Exams and projects can also be added one click at a time. Nothing is written without your click.
+5. Pick a destination: **Google Calendar / Gmail**, **Outlook Calendar / Outlook mail**, or **Fallback: .ics download / mailto draft**. Google or Outlook opens one compose or subscribe tab. Fallback downloads a reminder-ready `.ics` (Apple Calendar opens it too). Exams and projects can also be added one click at a time. Nothing is written without your click.
 6. Open **Collisions** if week 7 piles up (CS 301 midterm, DES 220 project, ECON 210 midterm)
-7. Review the extension draft. Termwise will not send it. Review in Gmail or Outlook mail, or use `mailto:`.
+7. Review the extension draft. Termwise will not send it. Choose Gmail, Outlook mail, or Fallback `mailto:`.
 
 Paste text or upload a text-based PDF. Open **Customize** to change theme, accent color, course colors, density, calendar/mail destination, and which overview widgets show, and in what order. Settings stay in the browser.
 
@@ -51,4 +51,4 @@ Setup steps are in `template/GROK_BOT.md` and in the app's **Templates** view (c
 - **weekly-brief**: dues by course, collisions in 2 weeks, one thing to start early
 - **draft-extension-request**: polite draft to the professor on the flexible item; never sent unless you say “send it”
 
-Google Calendar / Gmail or Outlook Calendar / Outlook mail two-way sync needs those plugins in Grok Bot. This app's fallbacks are `.ics` download, an optional subscribe URL, and `mailto:` / web compose drafts. Google OAuth and Microsoft OAuth are not used.
+Google Calendar / Gmail or Outlook Calendar / Outlook mail two-way sync needs those plugins in Grok Bot. This app still shows the same picker even when only Fallback works: `.ics` download, an optional subscribe URL, and `mailto:` / web compose drafts. Google OAuth and Microsoft OAuth are not used.

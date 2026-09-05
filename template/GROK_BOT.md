@@ -13,4 +13,4 @@ Termwise is both a working web app in this repo and a Grok Bot. Create the Bot, 
 
 Recipients reconnect whichever they use — Google Calendar / Gmail and/or Outlook Calendar / Outlook mail. They pick; they do not get your logins.
 
-The working web app in this repo runs the same skills without Grok plugins: paste or upload a syllabus, confirm the table, then export `.ics` / open a `mailto:` draft for Google or Outlook.
+The working web app in this repo runs the same skills without Grok plugins: paste or upload a syllabus, confirm the table, then pick Google Calendar / Gmail, Outlook Calendar / Outlook mail, or Fallback: `.ics` download / `mailto:` draft.
